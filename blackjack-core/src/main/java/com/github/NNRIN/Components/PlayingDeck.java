@@ -15,6 +15,12 @@ public class PlayingDeck implements IPlayingDeck {
     private int decks;
     private boolean isCutCardInStack = true;
 
+    /**
+     * Creates a new PlayingDeck with the specified number of decks.
+     * The deck is automatically populated, shuffled, and a cut card is inserted.
+     *
+     * @param decks The number of standard 52-card decks to include in the shoe.
+     */
     public PlayingDeck(int decks) {
         this.decks = decks;
         populateStack(decks);
@@ -72,16 +78,33 @@ public class PlayingDeck implements IPlayingDeck {
         }
     }
 
+    /**
+     * Gets the total number of decks used in this playing deck.
+     *
+     * @return The number of decks.
+     */
     @Override
     public int getDeckAmount() {
         return decks;
     }
 
+    /**
+     * Gets the current number of cards remaining in the stack.
+     *
+     * @return The size of the stack.
+     */
     @Override
     public int getStackSize() {
         return stack.size();
     }
 
+    /**
+     * Removes and returns the top card from the stack.
+     * If the top card is the Cut Card, it is discarded, the flag is updated, and the next card is returned.
+     *
+     * @return The next Card from the stack.
+     * @throws RuntimeException if the stack is empty.
+     */
     @Override
     public Card Pop() {
         if(stack.size() == 0)
@@ -94,6 +117,11 @@ public class PlayingDeck implements IPlayingDeck {
         return stack.pop();
     }
 
+    /**
+     * Checks if the Cut Card is still present in the stack.
+     *
+     * @return true if the Cut Card is in the stack, false otherwise.
+     */
     @Override
     public boolean isCutCardInStack() {
         return isCutCardInStack;
