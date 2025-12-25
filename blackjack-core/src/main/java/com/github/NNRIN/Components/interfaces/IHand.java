@@ -95,4 +95,6 @@ public interface IHand {
      */
     void stand();
 
+
+    void reset();
 }

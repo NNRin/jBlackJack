@@ -222,4 +222,11 @@ public class Hand implements IHand {
     public void stand() {
         status = ParticipantStates.FinishedTurn;
     }
+
+    @Override
+    public void reset() {
+        cards.clear();
+        bet = 0;
+        status = ParticipantStates.Preparing;
+    }
 }
