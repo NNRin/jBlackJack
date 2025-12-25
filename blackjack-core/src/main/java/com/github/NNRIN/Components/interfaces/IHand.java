@@ -76,7 +76,7 @@ public interface IHand {
      * Adds a card to the hand.
      * @param card The Card object to be added.
      */
-    void AddCard(Card card);
+    void addCard(Card card);
 
     /**
      * Calculates the payout for the round based on the hand's result and bet.
