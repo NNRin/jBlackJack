@@ -1,5 +1,6 @@
 package com.github.NNRIN.Participants.interfaces;
 
+import com.github.NNRIN.Cards.Card;
 import com.github.NNRIN.Components.interfaces.IHand;
 
 import java.util.List;
@@ -32,9 +33,11 @@ public interface IPlayer {
     // set on hand-on-turn's bet
     void setBet(double bet);
 
-    IHand split();
+    void setIsSurrenderAvailable(boolean isSurrenderAvailable);
 
-    void doubleDown();
+    void split(Card c1, Card c2);
+
+    void doubleDown(Card c);
 
     void surrender();
 

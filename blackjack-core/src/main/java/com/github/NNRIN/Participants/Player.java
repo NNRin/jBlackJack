@@ -1,12 +1,11 @@
 package com.github.NNRIN.Participants;
 
+import com.github.NNRIN.Cards.Card;
 import com.github.NNRIN.Cards.Facevalues;
-import com.github.NNRIN.Cards.utils.FacevalueCalculator;
 import com.github.NNRIN.Cards.utils.interfaces.IFacevalueCalculator;
 import com.github.NNRIN.Components.Hand;
 import com.github.NNRIN.Components.interfaces.IHand;
 import com.github.NNRIN.Helper.ParticipantStates;
-import com.github.NNRIN.Helper.PayoutCalculator;
 import com.github.NNRIN.Helper.interfaces.IPayoutCalculator;
 import com.github.NNRIN.Participants.interfaces.IPlayer;
 
@@ -18,10 +17,12 @@ public class Player implements IPlayer {
     private List<IHand> hands = new ArrayList<>();
     private String name;
     private double credit;
-    private boolean isSurrenderAvailable = true;
+    private boolean isSurrenderAvailable = false;
     private boolean isInsuranceBought = false;
-    private double insuranecBet = 0;
+    private double insuranceBet = 0;
     private boolean insuranceWon = false;
+    private IPayoutCalculator payoutCalculator;
+    private IFacevalueCalculator facevalueCalculator;
 
     public Player(String name, double credit,
             IFacevalueCalculator facevalueCalculator,
@@ -29,6 +30,12 @@ public class Player implements IPlayer {
     ) {
         this.name = name;
         this.credit = credit;
+        this.facevalueCalculator = facevalueCalculator;
+        this.payoutCalculator = payoutCalculator;
+        initHand();
+    }
+
+    private void initHand() {
         hands.add(new Hand(facevalueCalculator, payoutCalculator));
         hands.getFirst().setStatus(ParticipantStates.Preparing);
     }
@@ -85,7 +92,7 @@ public class Player implements IPlayer {
                 .filter(h -> h.getStatus() == ParticipantStates.OnTurn).findFirst();
 
         if(!onTurn.isPresent())
-            throw new IllegalStateException();
+            throw new IllegalStateException("No Hand is onTurn");
 
         return onTurn.get();
     }
@@ -93,6 +100,11 @@ public class Player implements IPlayer {
     @Override
     public boolean isSurrenderAvailable() {
         return isSurrenderAvailable;
+    }
+
+    @Override
+    public void setIsSurrenderAvailable(boolean isSurrenderAvailable) {
+        this.isSurrenderAvailable = isSurrenderAvailable;
     }
 
     @Override
@@ -110,7 +122,7 @@ public class Player implements IPlayer {
 
     @Override
     public double getInsuranceBet() {
-        return insuranecBet;
+        return insuranceBet;
     }
 
     @Override
@@ -120,49 +132,103 @@ public class Player implements IPlayer {
 
     @Override
     public void setBet(double bet) {
-        try{
-            IHand onTurnHand = getHandOnTurn();
-            if(bet > credit || bet < 0)
-                throw new Exception("");
+        if(bet > credit || bet < 0)
+            throw new RuntimeException("bet amount is not smaller than credit or above 0");
 
-            onTurnHand.setBet(bet);
-        } catch (Exception e){
-            throw new RuntimeException("no hand on turn or wrong credit amount");
+        hands.get(0).setBet(bet); // guaranteed to be only one hand at betting stage
+    }
+
+    @Override
+    public void split(Card c1, Card c2) {
+        try {
+            if (!isSplitAvailable())
+                throw new Exception("Not splittable");
+
+            IHand onTurnHand = getHandOnTurn();
+
+            boolean aceSplit = onTurnHand.getCards().get(0).facevalue().equals(Facevalues.Ace);
+
+            credit -= onTurnHand.getBet();
+            IHand newHand = onTurnHand.split();
+            hands.add(newHand);
+
+            onTurnHand.addCard(c1);
+            newHand.addCard(c2);
+
+            if (aceSplit) {
+                onTurnHand.setStatus(ParticipantStates.FinishedTurn);
+                newHand.setStatus(ParticipantStates.FinishedTurn);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+
+    }
+
+    @Override
+    public void doubleDown(Card c) {
+        try {
+            IHand handOnTurn = getHandOnTurn();
+            if(!isDoubleDownAvailable())
+                throw new Exception("DoubleDown not available");
+            handOnTurn.addCard(c);
+            credit -= handOnTurn.getBet();
+            handOnTurn.setBet(handOnTurn.getBet()*2);
+            handOnTurn.setStatus(ParticipantStates.FinishedTurn);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
         }
     }
 
     @Override
-    public IHand split() {
-        return null;
-    }
-
-    @Override
-    public void doubleDown() {
-
-    }
-
-    @Override
     public void surrender() {
+        try {
+            IHand handOnTurn = getHandOnTurn();
+            if(!isSurrenderAvailable())
+                throw new Exception("Surrender not available");
 
+            handOnTurn.setStatus(ParticipantStates.Surrendered);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     @Override
     public void insure() {
+            if(!isInsuranceAvailable())
+                throw new RuntimeException("Insurance not available");
 
+            insuranceBet = hands.get(0).getBet() / 2;
+            credit -= insuranceBet;
+            isInsuranceBought = true;
     }
 
     @Override
     public void payoutWinnings() {
-
+        for (IHand h : hands) {
+            credit += h.getRoundPayout();
+        }
     }
 
     @Override
     public void triggerInsuranceWin() {
+        if (!isInsuranceBought())
+            throw new RuntimeException("No Insurance Bought");
 
+        credit += insuranceBet + insuranceBet * 2;
+        insuranceWon = true;
     }
 
     @Override
     public void reset() {
+        insuranceWon = false;
+        insuranceBet = 0;
+        isInsuranceBought = false;
+        isSurrenderAvailable = false;
 
+
+        hands.clear();
+        initHand();
     }
 }
