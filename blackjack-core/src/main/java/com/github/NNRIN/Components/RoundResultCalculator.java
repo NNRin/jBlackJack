@@ -13,7 +13,9 @@ public class RoundResultCalculator implements IRoundResultCalculator {
             return handleDealerNaturalBlackJack(playerHand);
         } else if (playerHand.isNaturalBlackJack()) {
             return ParticipantStates.BlackJack;
-        } else if (playerHand.getHandValue() > dealerHand.getHandValue()) {
+        } else if (dealerHand.isBusted()){
+            return ParticipantStates.Winner;
+        }else if (playerHand.getHandValue() > dealerHand.getHandValue()) {
             return ParticipantStates.Winner;
         } else if (playerHand.getHandValue() == dealerHand.getHandValue()) {
             return ParticipantStates.Push;
