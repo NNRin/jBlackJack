@@ -172,7 +172,9 @@ public class Player implements IPlayer {
             hands.add(newHand);
 
             onTurnHand.addCard(c1);
+            onTurnHand.setIsSplitHand(true);
             newHand.addCard(c2);
+            newHand.setIsSplitHand(true);
 
             if (aceSplit) {
                 onTurnHand.setStatus(ParticipantStates.FinishedTurn);
