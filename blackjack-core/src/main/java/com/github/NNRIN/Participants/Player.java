@@ -103,6 +103,8 @@ public class Player implements IPlayer {
      * if a hand has been set to Status OnTurn.
      */
     private boolean setNextHandToBeOnTurn() {
+        if(hands.stream().filter(h -> h.getStatus() == ParticipantStates.OnTurn).count() == 1)
+            return true; // do nothing if a hand is still on Turn
         Optional<IHand> hand = hands.stream().
                 filter(h -> h.getStatus() == ParticipantStates.WaitingForTurn).findFirst();
 
