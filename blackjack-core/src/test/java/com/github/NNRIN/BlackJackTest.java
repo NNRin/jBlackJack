@@ -453,4 +453,92 @@ class BlackJackRoundTest {
                 "Hand bet should be doubled (200.0)");
     }
 
+    @Test
+    void testPlayerSurrender_CorrectStateAndPayout() {
+        MockDeck mockDeck = new MockDeck();
+
+        // 1. Define Deck Sequence
+        // Order: Dealer1, Dealer2, Player1, Player2 (No further cards needed as round ends instantly)
+        mockDeck.setDeckSequence(
+                // Initial Deal
+                new Card(Suits.Clubs, Facevalues.Ten),     // Dealer Card 1 (10)
+                new Card(Suits.Clubs, Facevalues.Six),     // Dealer Card 2 (6) -> Dealer Initial: 16
+                new Card(Suits.Hearts, Facevalues.Ten),    // Player Card 1 (10)
+                new Card(Suits.Spades, Facevalues.Two)     // Player Card 2 (2) -> Player Initial: 12
+        );
+
+        // 2. Setup
+        IFacevalueCalculator facevalueCalculator = new FacevalueCalculator();
+        IPayoutCalculator payoutCalculator = new PayoutCalculator();
+        double initialCredit = 1000.0;
+
+        ISingePlayerGameManager gameManager = new SinglePlayerGameManager(
+                new Dealer(facevalueCalculator, payoutCalculator),
+                new Player("You", initialCredit, facevalueCalculator, payoutCalculator),
+                mockDeck,
+                new RoundResultCalculator()
+        );
+
+        double betAmount = 100.0;
+        gameManager.placeBet(betAmount);
+
+        // Check State allows surrender (WaitingForMoveSurrenderAvailable)
+        assertEquals(GameState.WaitingForMoveSurrenderAvailable, gameManager.getGameState(),
+                "Game must allow surrender immediately after deal");
+
+        // ==============================================================================================
+        // 3. Execution Phase
+        // ==============================================================================================
+
+        // --- Step A: Surrender ---
+        // Player gives up half the bet to end the round.
+        gameManager.takeAction(Actions.Surrender);
+
+        // ==============================================================================================
+        // 4. Meticulous End-State Assertions
+        // ==============================================================================================
+
+        // --- Game Manager State ---
+        assertEquals(GameState.RoundOver, gameManager.getGameState(),
+                "Game must be in RoundOver state immediately after Surrender");
+
+        // --- Dealer State ---
+        IDealer dealer = gameManager.getDealer();
+        assertFalse(dealer.isHiddenHand(), "Dealer hand must be revealed");
+
+        // Critical Check: Dealer should NOT have played out the hand
+        // Even though Dealer has 16 (below threshold), Surrender ends the round before Dealer turn.
+        assertEquals(2, dealer.getHand().getCardAmount(),
+                "Dealer should still have only 2 cards");
+
+        // --- Player State ---
+        IPlayer player = gameManager.getPlayer();
+
+        // 1. Credit Check
+        // Calculation:
+        // Start: 1000
+        // - 100 (Initial Bet)
+        // + 50 (Payout: 0.5 * Bet for Surrender)
+        // = 950
+        assertEquals(950.0, player.getCredit(), 0.001,
+                "Credit should reflect a loss of half the bet");
+
+        // 2. Flags
+        assertFalse(player.isSurrenderAvailable(), "Surrender flag should be reset/false");
+
+        // --- Player Hand State ---
+        List<IHand> hands = player.getHand();
+        assertEquals(1, hands.size(), "Player should have 1 hand");
+
+        IHand hand = hands.get(0);
+
+        // Status Check
+        assertEquals(ParticipantStates.Surrendered, hand.getStatus(),
+                "Hand status should be Surrendered");
+
+        // Bet Check
+        assertEquals(betAmount, hand.getBet(), 0.001,
+                "Original bet amount remains recorded on the hand");
+    }
+
 }
