@@ -92,11 +92,27 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
     }
 
     /**
-     * Call this once all the players actions have been taken and his turn is thus over.
+     * Call this once all the players actions have been taken and his turn is thus over. Meaning all Hands of Player
+     * should be in FinishedTurn
      */
     private void finishedPlayerActions() {
-        //todo: payout and status setting idk
+        if (player.getHand().stream().filter(h -> h.getStatus() != ParticipantStates.FinishedTurn).count() != 0)
+            throw new RuntimeException("All of the Hands must have finished their turn.");
+
+        triggerDealerAction();
+
+        player.getHand().stream().forEach(h -> {
+            h.setStatus(roundResultCalculator.calculateResult(h, dealer.getHand()));
+        });
+
+        payoutPlayer();
         setRoundOver();
+    }
+
+    private void triggerDealerAction() {
+        while (dealer.isBelowThreshold()) {
+            dealer.addCardToHand(playingDeck.Pop());
+        }
     }
 
     private void disableSurrenderForPlayer() {
