@@ -10,7 +10,7 @@ public class PayoutCalculator implements IPayoutCalculator {
     /**
      * Returns the payout multiplier corresponding to the participant's state.
      * <ul>
-     *     <li>{@link ParticipantStates#Winner}, {@link ParticipantStates#UnnaturalBlackJack}: 1.0 (1:1 payout)</li>
+     *     <li>{@link ParticipantStates#Winner}: 1.0 (1:1 payout)</li>
      *     <li>{@link ParticipantStates#BlackJack}: 1.5 (3:2 payout)</li>
      *     <li>{@link ParticipantStates#Loser}: -1.0 (Loss of bet)</li>
      *     <li>{@link ParticipantStates#Surrendered}: -0.5 (Loss of half bet)</li>
@@ -23,7 +23,7 @@ public class PayoutCalculator implements IPayoutCalculator {
     @Override
     public double getPayoutMultiplier(ParticipantStates states) {
         return switch (states) {
-            case Winner, UnnaturalBlackJack -> 1.0;
+            case Winner -> 1.0;
             case BlackJack -> 1.5;
             case Loser -> -1.0;
             case Surrendered -> -0.5;
