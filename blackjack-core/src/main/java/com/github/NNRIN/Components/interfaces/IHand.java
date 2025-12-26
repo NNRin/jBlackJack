@@ -24,6 +24,8 @@ public interface IHand {
      */
     void setBet(double bet);
 
+    void setIsSplitHand(boolean isSplitHand);
+
     /**
      * Returns the bet of this hand.
      * @return The double value of the bet set for this hand. 
