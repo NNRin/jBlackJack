@@ -179,23 +179,68 @@ class BlackJackRoundTest {
         // Player freezes at 19. Dealer plays (draws 10 -> busts).
         gameManager.takeAction(Actions.Stand);
 
-        // 6. Final State Assertions
-        IPlayer player = gameManager.getPlayer();
-        IHand playerHand = player.getHand().get(0);
+        // ==============================================================================================
+        // 4. Meticulous End-State Assertions
+        // ==============================================================================================
 
-        // Verify Round Over
+        // --- Game Manager State ---
         assertEquals(GameState.RoundOver, gameManager.getGameState(),
-                "Game should be over after Player stands and Dealer busts");
+                "Game must be in RoundOver state");
+        assertFalse(gameManager.wasStackReshuffled(),
+                "Stack should not be reshuffled during this specific sequence");
 
-        // Verify Result Status
-        assertEquals(ParticipantStates.Winner, playerHand.getStatus(),
-                "Player should be Winner because Dealer busted");
+        // --- Dealer State ---
+        IDealer dealer = gameManager.getDealer();
 
-        // Verify Payout
-        // Logic: 1000 - 100 (Bet) + 200 (Winnings: Bet + 1:1 Payout) = 1100
-        double expectedCredit = initialCredit + betAmount;
-        assertEquals(expectedCredit, player.getCredit(), 0.001,
-                "Credit should reflect standard win payout (1:1)");
+        // Key Check: Dealer hand must be revealed at RoundOver
+        assertFalse(dealer.isHiddenHand(),
+                "Dealer hand must be revealed when round is over");
+
+        IHand dealerHand = dealer.getHand();
+        assertEquals(3, dealerHand.getCardAmount(),
+                "Dealer should have 3 cards (10, 6, 10)");
+        assertEquals(26, dealerHand.getHandValue(),
+                "Dealer hand value should be 26");
+        assertTrue(dealerHand.isBusted(),
+                "Dealer should be busted");
+
+        // --- Player State ---
+        IPlayer player = gameManager.getPlayer();
+
+        // 1. Credit Check (1000 start - 100 bet + 200 payout = 1100)
+        assertEquals(1100.0, player.getCredit(), 0.001,
+                "Credit should reflect Win (1:1 payout)");
+
+        // 2. Flag Cleanup Checks
+        // Crucial: Ensure 'In-Round' flags are turned off
+        assertFalse(player.isSurrenderAvailable(), "Surrender must not be available after round end");
+        // Note: The following depend on your Player implementation resetting them,
+        // but typically 'Available' checks rely on GameState or Hand Status, so they should be false or irrelevant.
+        // If your Player logic is strict, you might assert specific internal booleans here.
+
+        // 3. Insurance Checks
+        assertFalse(player.isInsuranceBought(), "Insurance was not bought");
+        assertFalse(player.isInsuranceWon(), "Insurance was not won");
+        assertEquals(0.0, player.getInsuranceBet(), 0.001, "Insurance bet should be 0");
+
+        // --- Player Hand State ---
+        List<IHand> hands = player.getHand();
+        assertEquals(1, hands.size(), "Player should still have exactly 1 hand");
+
+        IHand hand = hands.get(0);
+
+        // Status Check
+        assertEquals(ParticipantStates.Winner, hand.getStatus(),
+                "Hand status should be Winner");
+
+        // Card Content Check
+        assertEquals(3, hand.getCardAmount(), "Player should have 3 cards");
+        assertEquals(19, hand.getHandValue(), "Player hand value should be 19");
+        assertEquals(100.0, hand.getBet(), 0.001, "Bet amount on hand should remain 100");
+
+        // Final sanity check: Cards are what we expect
+        assertEquals(Facevalues.Seven, hand.getCards().get(2).facevalue(),
+                "The 3rd card should be the Seven we Hit for");
     }
 
 }
