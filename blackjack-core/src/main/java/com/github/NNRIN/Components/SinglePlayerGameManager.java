@@ -41,10 +41,15 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
     private void initializePlayerActionPhase() {
         gameState = GameState.WaitingForMoveSurrenderAvailable;
         player.getHand().get(0).setStatus(ParticipantStates.WaitingForTurn);
+        player.setIsSurrenderAvailable(true); // the first move in the OnTurn Phase is allowed to be surrender
     }
 
     private void dealInitialCards() {
-        // todo: deal cards
+        dealer.addCardToHand(playingDeck.Pop());
+        dealer.addCardToHand(playingDeck.Pop());
+
+        player.getHand().get(0).addCard(playingDeck.Pop());
+        player.getHand().get(0).addCard(playingDeck.Pop());
     }
 
     private void checkToOfferInsurance() {
@@ -52,6 +57,7 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
         if (dealer.isInsuranceOffered() && player.isInsuranceAvailable()) {
             gameState = GameState.OfferingInsurance;
             player.getHand().get(0).setStatus(ParticipantStates.Insuring);
+            player.setIsSurrenderAvailable(false); // no surrender during insurance phase
         }
     }
 
@@ -63,7 +69,12 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
     public void placeBet(double bet) {
         if(gameState != GameState.WaitingForBet)
             throw new RuntimeException("Can't place a bet if not in specific GameState.");
+        resetWasStackShuffled();
         handleBet(bet);
+    }
+
+    private void resetWasStackShuffled() {
+        wasStackReshuffled = false;
     }
 
     @Override
@@ -217,7 +228,17 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
     }
 
     private void handleNextRound() {
+        handlePlayingDeck();
+        dealer.reset();
+        player.reset();
+        initializeBettingPhase();
+    }
 
+    private void handlePlayingDeck() {
+        if (!playingDeck.isCutCardInStack()) {
+            playingDeck = new PlayingDeck(playingDeck.getDeckAmount());
+            wasStackReshuffled = true;
+        }
     }
 
     @Override
