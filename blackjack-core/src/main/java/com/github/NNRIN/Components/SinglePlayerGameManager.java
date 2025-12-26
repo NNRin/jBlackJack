@@ -40,7 +40,7 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
 
     private void initializePlayerActionPhase() {
         gameState = GameState.WaitingForMoveSurrenderAvailable;
-        player.getHand().get(0).setStatus(ParticipantStates.WaitingForTurn);
+        player.getHand().get(0).setStatus(ParticipantStates.OnTurn);
         player.setIsSurrenderAvailable(true); // the first move in the OnTurn Phase is allowed to be surrender
     }
 
