@@ -22,6 +22,7 @@ public class Hand implements IHand {
     private ParticipantStates status;
     private IFacevalueCalculator facevalueCalculator;
     private IPayoutCalculator payoutCalculator;
+    private boolean isSplitHand = false;
 
     /**
      * Constructs a new Hand with the specified calculators.
@@ -146,7 +147,7 @@ public class Hand implements IHand {
      */
     @Override
     public boolean isNaturalBlackJack() {
-        return cards.size() == 2 && calcHandValue() == 21;
+        return cards.size() == 2 && calcHandValue() == 21 && !isSplitHand;
     }
 
     /**
@@ -179,7 +180,7 @@ public class Hand implements IHand {
      * @param card The card to add.
      */
     @Override
-    public void addCard(Card card) {
+    public void addCard(Card card) { //todo: also set finished turn if value = 21
         cards.add(card);
         if(isBusted())
             status = ParticipantStates.FinishedTurn;
@@ -228,5 +229,10 @@ public class Hand implements IHand {
         cards.clear();
         bet = 0;
         status = ParticipantStates.Preparing;
+    }
+
+    @Override
+    public void setIsSplitHand(boolean isSplitHand) {
+        this.isSplitHand = isSplitHand;
     }
 }
