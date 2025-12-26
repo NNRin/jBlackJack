@@ -66,4 +66,10 @@ public class Dealer implements IDealer {
     public boolean isPrematureBlackJack() {
         return isInsuranceOffered() && facevalueCalculator.getCardValue(hand.getCards().get(1)) == 10;
     }
+
+    @Override
+    public boolean isBelowThreshold() {
+        return hand.getHandValue() < 17;
+    }
+
 }
