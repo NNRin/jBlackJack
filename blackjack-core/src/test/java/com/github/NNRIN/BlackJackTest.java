@@ -359,4 +359,98 @@ class BlackJackRoundTest {
         assertEquals(betAmount, hand2.getBet(), 0.001, "Hand 2 bet should be 100");
     }
 
+    @Test
+    void testPlayerDoubleDown_PlayerWins_FullStateAssertion() {
+        MockDeck mockDeck = new MockDeck();
+
+        // 1. Define Deck Sequence
+        // Order: Dealer1, Dealer2, Player1, Player2, DoubleDownCard, DealerHit
+        mockDeck.setDeckSequence(
+                // Initial Deal
+                new Card(Suits.Clubs, Facevalues.Ten),     // Dealer Card 1 (10)
+                new Card(Suits.Clubs, Facevalues.Five),    // Dealer Card 2 (5) -> Dealer Initial: 15
+                new Card(Suits.Hearts, Facevalues.Six),    // Player Card 1 (6)
+                new Card(Suits.Spades, Facevalues.Five),   // Player Card 2 (5) -> Player Initial: 11
+
+                // Double Down Action (One card dealt, turn ends)
+                new Card(Suits.Diamonds, Facevalues.King), // Player Card 3 (11 + 10 = 21)
+
+                // Dealer Action (Dealer must play as Player finished turn)
+                new Card(Suits.Spades, Facevalues.Ten)     // Dealer Card 3 (15 + 10 = 25 BUST)
+        );
+
+        // 2. Setup
+        IFacevalueCalculator facevalueCalculator = new FacevalueCalculator();
+        IPayoutCalculator payoutCalculator = new PayoutCalculator();
+        double initialCredit = 1000.0;
+
+        ISingePlayerGameManager gameManager = new SinglePlayerGameManager(
+                new Dealer(facevalueCalculator, payoutCalculator),
+                new Player("You", initialCredit, facevalueCalculator, payoutCalculator),
+                mockDeck,
+                new RoundResultCalculator()
+        );
+
+        double initialBet = 100.0;
+        gameManager.placeBet(initialBet); // State -> WaitingForMoveSurrenderAvailable
+
+        // ==============================================================================================
+        // 3. Execution Phase
+        // ==============================================================================================
+
+        // --- Step A: Double Down ---
+        // Player doubles down.
+        // Logic:
+        // 1. Checks if Player has enough credit (1000 - 100 [initial] = 900 available > 100 needed).
+        // 2. Draws 1 Card.
+        // 3. Doubles the Hand's bet.
+        // 4. Forces 'Stand' (FinishedTurn).
+        // 5. Game Manager detects finished turn and triggers Dealer.
+        gameManager.takeAction(Actions.DoubleDown);
+
+        // ==============================================================================================
+        // 4. Meticulous End-State Assertions
+        // ==============================================================================================
+
+        // --- Game Manager State ---
+        assertEquals(GameState.RoundOver, gameManager.getGameState(),
+                "Game must be in RoundOver state immediately after DoubleDown");
+
+        // --- Dealer State ---
+        IDealer dealer = gameManager.getDealer();
+        assertFalse(dealer.isHiddenHand(), "Dealer hand must be revealed");
+        assertTrue(dealer.getHand().isBusted(), "Dealer should be busted (25)");
+
+        // --- Player State ---
+        IPlayer player = gameManager.getPlayer();
+
+        // 1. Credit Check
+        // Calculation:
+        // Start: 1000
+        // - 100 (Initial Bet)
+        // - 100 (Double Down Bet deduction)
+        // + 400 (Payout: 200 Bet + 200 Win)
+        // = 1200
+        assertEquals(1200.0, player.getCredit(), 0.001,
+                "Credit should reflect Win on a Doubled Bet");
+
+        // 2. Flags
+        assertFalse(player.isSurrenderAvailable(), "Surrender not available");
+
+        // --- Player Hand State ---
+        List<IHand> hands = player.getHand();
+        assertEquals(1, hands.size(), "Player should have 1 hand");
+
+        IHand hand = hands.get(0);
+
+        // Status & Value
+        assertEquals(ParticipantStates.Winner, hand.getStatus(), "Hand should be Winner");
+        assertEquals(21, hand.getHandValue(), "Hand value should be 21");
+        assertEquals(3, hand.getCardAmount(), "Hand should have exactly 3 cards");
+
+        // Bet Check (Crucial for Double Down)
+        assertEquals(initialBet * 2, hand.getBet(), 0.001,
+                "Hand bet should be doubled (200.0)");
+    }
+
 }
