@@ -94,14 +94,26 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
         //todo: payout and status setting idk
         setRoundOver();
     }
+
+    private void disableSurrenderForPlayer() {
+        player.setIsSurrenderAvailable(false);
+        gameState = GameState.WaitingForMove;
+    }
     
     private void handleHit() {
         verifyStandardAction();
-
+        disableSurrenderForPlayer();
+        if (player.hit(playingDeck.Pop())) {
+            // all Hands of Player have been dealt with
+            finishedPlayerActions();
+        }else{
+            // The Hand is still OnTurn or another Hand of the Player is now OnTurn
+        }
     }
 
     private void handleStand() {
         verifyStandardAction();
+        disableSurrenderForPlayer();
         if (player.stand()) { // Stand on this hand, returns true to signal all of the players hand are dealt with.
             finishedPlayerActions();
         }else{
@@ -111,10 +123,12 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
 
     private void handleDoubleDown() {
         verifyStandardAction();
+        disableSurrenderForPlayer();
     }
 
     private void handleSplit() {
         verifyStandardAction();
+        disableSurrenderForPlayer();
     }
 
     private void handleSurrender() {
