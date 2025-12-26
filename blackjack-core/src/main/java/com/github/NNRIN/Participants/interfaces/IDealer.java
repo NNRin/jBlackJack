@@ -67,5 +67,7 @@ public interface IDealer {
      * @return
      */
     boolean isPrematureBlackJack();
+
+    boolean isBelowThreshold();
     
 }
