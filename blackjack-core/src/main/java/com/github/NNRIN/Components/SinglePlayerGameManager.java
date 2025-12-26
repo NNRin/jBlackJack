@@ -55,6 +55,10 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
         }
     }
 
+    private void payoutPlayer() {
+        player.payoutWinnings();
+    }
+
     @Override
     public void placeBet(double bet) {
         if(gameState != GameState.WaitingForBet)
@@ -147,7 +151,9 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
         if(gameState != GameState.WaitingForMoveSurrenderAvailable)
             throw new RuntimeException("Can't surrender if not in specific GameState.");
 
-
+        player.surrender();
+        payoutPlayer();
+        setRoundOver();
     }
 
     private boolean hasDealerBlackJackDuringInsurance() {
@@ -167,7 +173,7 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
                     player.getHand().get(0), // always only one hand for player
                     dealer.getHand())
             );
-            player.payoutWinnings();
+            payoutPlayer();
             triggerInsuranceIfApplicable();
             setRoundOver();
         }else {
