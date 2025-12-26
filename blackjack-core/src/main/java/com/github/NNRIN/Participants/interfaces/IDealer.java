@@ -61,5 +61,11 @@ public interface IDealer {
      * @param card The {@link Card} to add to the hand.
      */
     void addCardToHand(Card card);
+
+    /**
+     * Signals the Dealer has a BlackJack and their upcard is an ace. This causes the round to be over instantly.
+     * @return
+     */
+    boolean isPrematureBlackJack();
     
 }

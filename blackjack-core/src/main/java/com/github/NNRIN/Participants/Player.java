@@ -97,6 +97,22 @@ public class Player implements IPlayer {
         return onTurn.get();
     }
 
+    /**
+     * Sets the first hand with Status WaitingForTurn to be on Turn.
+     * @return False if there are no more Hands that have not finished their actions (all FinishedTurn) and True
+     * if a hand has been set to Status OnTurn.
+     */
+    private boolean setNextHandToBeOnTurn() {
+        Optional<IHand> hand = hands.stream().
+                filter(h -> h.getStatus() == ParticipantStates.WaitingForTurn).findFirst();
+
+        if(hand.isEmpty())
+            return false;
+
+        hand.get().setStatus(ParticipantStates.OnTurn);
+        return true;
+    }
+
     @Override
     public boolean isSurrenderAvailable() {
         return isSurrenderAvailable;
@@ -139,7 +155,7 @@ public class Player implements IPlayer {
     }
 
     @Override
-    public void split(Card c1, Card c2) {
+    public boolean split(Card c1, Card c2) {
         try {
             if (!isSplitAvailable())
                 throw new Exception("Not splittable");
@@ -159,6 +175,7 @@ public class Player implements IPlayer {
                 onTurnHand.setStatus(ParticipantStates.FinishedTurn);
                 newHand.setStatus(ParticipantStates.FinishedTurn);
             }
+            return false; //todo
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -166,7 +183,7 @@ public class Player implements IPlayer {
     }
 
     @Override
-    public void doubleDown(Card c) {
+    public boolean doubleDown(Card c) {
         try {
             IHand handOnTurn = getHandOnTurn();
             if(!isDoubleDownAvailable())
@@ -175,9 +192,15 @@ public class Player implements IPlayer {
             credit -= handOnTurn.getBet();
             handOnTurn.setBet(handOnTurn.getBet()*2);
             handOnTurn.setStatus(ParticipantStates.FinishedTurn);
+            return false; //todo
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    @Override
+    public boolean hit(Card card) {
+        return false; //todo
     }
 
     @Override
@@ -230,5 +253,23 @@ public class Player implements IPlayer {
 
         hands.clear();
         initHand();
+    }
+
+    /**
+     * Applies Stand action on current hand (onTurn status). And sets the next Hand to be on TUrn of this player, if
+     * there is a Hand that has not been played yet.
+     * @return True if no more Hand of Player is onTurn, False if Player still has a HandOnTurn
+     */
+    @Override
+    public boolean stand() {
+        try{
+            IHand h = getHandOnTurn();
+            h.stand();
+            return !setNextHandToBeOnTurn();
+        }catch (Exception e){
+            throw new RuntimeException("Can't stand, no hand on Turn");
+        }
+
+
     }
 }
