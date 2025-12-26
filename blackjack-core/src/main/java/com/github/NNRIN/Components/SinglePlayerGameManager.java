@@ -117,23 +117,36 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
         if (player.stand()) { // Stand on this hand, returns true to signal all of the players hand are dealt with.
             finishedPlayerActions();
         }else{
-            gameState = GameState.WaitingForMove;     // continue waiting for moves as player has more hands (now on turn)
+            // continue waiting for moves as player has more hands (now on turn)
         }
     }
 
     private void handleDoubleDown() {
         verifyStandardAction();
         disableSurrenderForPlayer();
+        if (player.doubleDown(playingDeck.Pop())) {
+            // all Hands of Player have been dealt with
+            finishedPlayerActions();
+        }else{
+            // The Hand is still OnTurn or another Hand of the Player is now OnTurn
+        }
     }
 
     private void handleSplit() {
         verifyStandardAction();
         disableSurrenderForPlayer();
+        if (player.split(playingDeck.Pop(), playingDeck.Pop())) {
+            // all Hands of Player have been dealth with
+            finishedPlayerActions();
+        }else{
+            // A Hand is Still onTurn (the one Split or the new one), game ready to take further action input
+        }
     }
 
     private void handleSurrender() {
         if(gameState != GameState.WaitingForMoveSurrenderAvailable)
             throw new RuntimeException("Can't surrender if not in specific GameState.");
+
 
     }
 
