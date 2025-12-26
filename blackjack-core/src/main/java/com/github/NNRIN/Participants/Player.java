@@ -125,7 +125,7 @@ public class Player implements IPlayer {
 
     @Override
     public boolean isInsuranceAvailable() {
-        if (hands.size() > 1 || hands.get(0).getCards().size() > 2) {
+        if (hands.size() > 1 || hands.get(0).getCards().size() > 2 || hands.get(0).getStatus() != ParticipantStates.Insuring) {
             return false;
         }
         return credit >= hands.get(0).getBet() / 2;
