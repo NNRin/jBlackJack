@@ -25,7 +25,7 @@ public interface IPlayingDeck {
      * It then is in the using Objects duty to reshuffle (initialize a new PlayingDeck).
      * @return a valid Card (no Cut Card)
      */
-    Card Pop();
+    Card Pop(); //todo: ensure this auto reshuffles instead of having to be reshuffled by the gameManager
 
     /**
      * Signals if the Cut Card is present in this PlayingDecks Card Stack.
