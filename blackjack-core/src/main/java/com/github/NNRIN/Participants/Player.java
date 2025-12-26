@@ -125,7 +125,9 @@ public class Player implements IPlayer {
 
     @Override
     public boolean isInsuranceAvailable() {
-        if (hands.size() > 1 || hands.get(0).getCards().size() > 2 || hands.get(0).getStatus() != ParticipantStates.Insuring) {
+        if (hands.size() > 1 || hands.get(0).getCards().size() > 2 ||
+                !(hands.get(0).getStatus() == ParticipantStates.OnTurn ||
+                        hands.get(0).getStatus() == ParticipantStates.Insuring)) {
             return false;
         }
         return credit >= hands.get(0).getBet() / 2;
@@ -150,7 +152,7 @@ public class Player implements IPlayer {
     public void setBet(double bet) {
         if(bet > credit || bet < 0)
             throw new RuntimeException("bet amount is not smaller than credit or above 0");
-
+        credit -= bet;
         hands.get(0).setBet(bet); // guaranteed to be only one hand at betting stage
     }
 
