@@ -198,9 +198,25 @@ public class Player implements IPlayer {
         }
     }
 
+    /**
+     * Return True if all Hands are dealt with, false if still a Hand is OnTurn
+     * @param card
+     * @return
+     */
     @Override
     public boolean hit(Card card) {
-        return false; //todo
+        try {
+            IHand hand = getHandOnTurn();
+            hand.addCard(card);
+            if (hand.getStatus() == ParticipantStates.OnTurn) {
+                return false;
+            }else{
+                return !setNextHandToBeOnTurn();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Can't hit, no Hand on Turn");
+        }
+
     }
 
     @Override
