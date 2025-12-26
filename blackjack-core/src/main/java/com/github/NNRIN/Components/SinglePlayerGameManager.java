@@ -179,6 +179,7 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
             throw new RuntimeException("Can't surrender if not in specific GameState.");
 
         player.surrender();
+        player.setIsSurrenderAvailable(false); // no longer available, as it was already chosen
         payoutPlayer();
         setRoundOver();
     }
