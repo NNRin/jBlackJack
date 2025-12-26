@@ -154,6 +154,9 @@ public class Player implements IPlayer {
         hands.get(0).setBet(bet); // guaranteed to be only one hand at betting stage
     }
 
+    /**
+     * Return True if all Hands are dealt with, false if still a Hand is OnTurn
+     */
     @Override
     public boolean split(Card c1, Card c2) {
         try {
@@ -175,13 +178,16 @@ public class Player implements IPlayer {
                 onTurnHand.setStatus(ParticipantStates.FinishedTurn);
                 newHand.setStatus(ParticipantStates.FinishedTurn);
             }
-            return false; //todo
+            return !setNextHandToBeOnTurn();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
 
     }
 
+    /**
+     * Return True if all Hands are dealt with, false if still a Hand is OnTurn
+     */
     @Override
     public boolean doubleDown(Card c) {
         try {
@@ -192,7 +198,7 @@ public class Player implements IPlayer {
             credit -= handOnTurn.getBet();
             handOnTurn.setBet(handOnTurn.getBet()*2);
             handOnTurn.setStatus(ParticipantStates.FinishedTurn);
-            return false; //todo
+            return !setNextHandToBeOnTurn();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
