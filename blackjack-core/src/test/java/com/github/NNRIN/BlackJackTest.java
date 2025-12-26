@@ -243,4 +243,120 @@ class BlackJackRoundTest {
                 "The 3rd card should be the Seven we Hit for");
     }
 
+    @Test
+    void testPlayerSplit_BothHandsWin_FullStateAssertion() {
+        MockDeck mockDeck = new MockDeck();
+
+        // 1. Define Deck Sequence
+        // Order: Dealer1, Dealer2, Player1, Player2, SplitC1, SplitC2, Hand1Hit, DealerHit
+        mockDeck.setDeckSequence(
+                // Initial Deal
+                new Card(Suits.Clubs, Facevalues.Ten),    // Dealer Card 1 (10)
+                new Card(Suits.Clubs, Facevalues.Five),   // Dealer Card 2 (5) -> Dealer Initial: 15
+                new Card(Suits.Hearts, Facevalues.Eight), // Player Card 1 (8)
+                new Card(Suits.Spades, Facevalues.Eight), // Player Card 2 (8) -> Player Initial: 16 (Pair)
+
+                // Split Action (Manager pops 2 cards immediately for the new hands)
+                new Card(Suits.Diamonds, Facevalues.Three), // Card for Hand 1 (8 + 3 = 11)
+                new Card(Suits.Diamonds, Facevalues.King),  // Card for Hand 2 (8 + 10 = 18)
+
+                // Hand 1 Action: Hit
+                new Card(Suits.Hearts, Facevalues.Nine),    // Hand 1 hits (11 + 9 = 20)
+
+                // Dealer Action (played after both player hands stand)
+                new Card(Suits.Spades, Facevalues.Ten)      // Dealer hits (15 + 10 = 25 BUST)
+        );
+
+        // 2. Setup
+        IFacevalueCalculator facevalueCalculator = new FacevalueCalculator();
+        IPayoutCalculator payoutCalculator = new PayoutCalculator();
+        double initialCredit = 1000.0;
+
+        ISingePlayerGameManager gameManager = new SinglePlayerGameManager(
+                new Dealer(facevalueCalculator, payoutCalculator),
+                new Player("You", initialCredit, facevalueCalculator, payoutCalculator),
+                mockDeck,
+                new RoundResultCalculator()
+        );
+
+        double betAmount = 100.0;
+        gameManager.placeBet(betAmount); // State -> WaitingForMoveSurrenderAvailable
+
+        // ==============================================================================================
+        // 3. Execution Phase
+        // ==============================================================================================
+
+        // --- Step A: Split ---
+        // Player splits the 8s. A second bet of 100.0 is deducted.
+        gameManager.takeAction(Actions.Split);
+        // Current Status:
+        // Hand 1 (OnTurn): 8 + 3 = 11
+        // Hand 2 (Waiting): 8 + 10 = 18
+
+        // --- Step B: Play Hand 1 ---
+        // We hit on 11 to get 20.
+        gameManager.takeAction(Actions.Hit);
+        // We stand on 20. This finishes Hand 1 and moves focus to Hand 2.
+        gameManager.takeAction(Actions.Stand);
+
+        // --- Step C: Play Hand 2 ---
+        // Hand 2 is now OnTurn with 18. We stand immediately.
+        // This finishes Hand 2, triggers Dealer turn, and ends round.
+        gameManager.takeAction(Actions.Stand);
+
+        // ==============================================================================================
+        // 4. Meticulous End-State Assertions
+        // ==============================================================================================
+
+        // --- Game Manager State ---
+        assertEquals(GameState.RoundOver, gameManager.getGameState(),
+                "Game must be in RoundOver state after all hands are played");
+        assertFalse(gameManager.wasStackReshuffled(), "Stack should not have shuffled");
+
+        // --- Dealer State ---
+        IDealer dealer = gameManager.getDealer();
+        assertFalse(dealer.isHiddenHand(), "Dealer hand must be revealed");
+
+        IHand dealerHand = dealer.getHand();
+        assertEquals(3, dealerHand.getCardAmount(), "Dealer should have 3 cards (10, 5, 10)");
+        assertTrue(dealerHand.isBusted(), "Dealer should be busted (25)");
+
+        // --- Player State ---
+        IPlayer player = gameManager.getPlayer();
+
+        // 1. Credit Check
+        // Logic: 1000 (Start)
+        // - 100 (Bet Hand 1) - 100 (Bet Hand 2)
+        // + 200 (Win Hand 1) + 200 (Win Hand 2)
+        // = 1200
+        assertEquals(1200.0, player.getCredit(), 0.001,
+                "Credit should reflect 2 Wins (Original Bet + Split Bet)");
+
+        // 2. Flags
+        assertFalse(player.isSurrenderAvailable(), "Surrender not available at end");
+        // Note: isSplitAvailable usually returns true only if the *current* hand is a pair.
+        // Since the round is over, this should be false or irrelevant, but safe to check false.
+        assertFalse(player.isSplitAvailable(), "Split shouldn't be available at RoundOver");
+
+        // --- Player Hands State ---
+        List<IHand> hands = player.getHand();
+        assertEquals(2, hands.size(), "Player should have exactly 2 hands after split");
+
+        // Check Hand 1
+        IHand hand1 = hands.get(0);
+        assertEquals(ParticipantStates.Winner, hand1.getStatus(), "Hand 1 should be a Winner");
+        assertEquals(20, hand1.getHandValue(), "Hand 1 value should be 20");
+        assertEquals(3, hand1.getCardAmount(), "Hand 1 should have 3 cards (8, 3, 9)");
+
+        // Check Hand 2
+        IHand hand2 = hands.get(1);
+        assertEquals(ParticipantStates.Winner, hand2.getStatus(), "Hand 2 should be a Winner");
+        assertEquals(18, hand2.getHandValue(), "Hand 2 value should be 18");
+        assertEquals(2, hand2.getCardAmount(), "Hand 2 should have 2 cards (8, K)");
+
+        // Check Bets on Hands
+        assertEquals(betAmount, hand1.getBet(), 0.001, "Hand 1 bet should be 100");
+        assertEquals(betAmount, hand2.getBet(), 0.001, "Hand 2 bet should be 100");
+    }
+
 }
