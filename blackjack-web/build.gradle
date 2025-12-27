@@ -25,10 +25,18 @@ ext {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.modulith:spring-modulith-starter-core'
+    implementation project(':blackjack-core')
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+
+    // MapStruct Processor
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    developmentOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 }
 
 dependencyManagement {
