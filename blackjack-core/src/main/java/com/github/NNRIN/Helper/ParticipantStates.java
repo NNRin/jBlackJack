@@ -3,6 +3,7 @@ package com.github.NNRIN.Helper;
 public enum ParticipantStates {
     Preparing,
     Betting,
+    Insuring,
     WaitingForTurn,
     OnTurn,
     FinishedTurn,
