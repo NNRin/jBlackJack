@@ -7,5 +7,6 @@ public enum Actions {
     Split,
     Surrender,
     Insurance,
-    Bet,
+    NoInsurance,
+    NextRound
 }
