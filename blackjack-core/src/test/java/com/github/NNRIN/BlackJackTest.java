@@ -828,4 +828,87 @@ class BlackJackRoundTest {
                 "Dealer hand value should be 20 (from Round 2 cards)");
     }
 
+    @Test
+    void testPlayerTakesInsurance_DealerNoBlackJack_GameContinues() {
+        MockDeck mockDeck = new MockDeck();
+
+        // 1. Define Deck Sequence
+        mockDeck.setDeckSequence(
+                // Initial Deal
+                new Card(Suits.Hearts, Facevalues.Ace),    // Dealer Upcard (Ace) -> Offers Insurance
+                new Card(Suits.Clubs, Facevalues.Seven),   // Dealer Hole Card (7) -> Total 18 (No BJ)
+                new Card(Suits.Spades, Facevalues.Ten),    // Player C1 (10)
+                new Card(Suits.Diamonds, Facevalues.Ten)   // Player C2 (10) -> 20
+        );
+
+        // 2. Setup
+        IFacevalueCalculator facevalueCalculator = new FacevalueCalculator();
+        IPayoutCalculator payoutCalculator = new PayoutCalculator();
+        double initialCredit = 1000.0;
+
+        ISingePlayerGameManager gameManager = new SinglePlayerGameManager(
+                new Dealer(facevalueCalculator, payoutCalculator),
+                new Player("You", initialCredit, facevalueCalculator, payoutCalculator),
+                mockDeck,
+                new RoundResultCalculator()
+        );
+
+        double betAmount = 100.0;
+        gameManager.placeBet(betAmount);
+
+        // Verify Insurance Offered
+        assertEquals(GameState.OfferingInsurance, gameManager.getGameState());
+
+        // ==============================================================================================
+        // 3. Execution: Take Insurance & Fail
+        // ==============================================================================================
+
+        // Action: Buy Insurance
+        gameManager.takeAction(Actions.Insurance);
+
+        // Assert Intermediate State (Crucial)
+        // Game should NOT be over. It should transition to allowing moves.
+        assertEquals(GameState.WaitingForMoveSurrenderAvailable, gameManager.getGameState(),
+                "Game should transition to player action phase after failed insurance");
+
+        // Assert Insurance Flags
+        assertTrue(gameManager.getPlayer().isInsuranceBought(), "Insurance should be marked as bought");
+        assertFalse(gameManager.getPlayer().isInsuranceWon(), "Insurance should be marked as NOT won");
+
+        // ==============================================================================================
+        // 4. Execution: Finish Round
+        // ==============================================================================================
+
+        // Action: Stand on 20
+        gameManager.takeAction(Actions.Stand);
+
+        // ==============================================================================================
+        // 5. Meticulous End-State Assertions
+        // ==============================================================================================
+
+        // --- Game Manager State ---
+        assertEquals(GameState.RoundOver, gameManager.getGameState());
+
+        // --- Dealer State ---
+        IDealer dealer = gameManager.getDealer();
+        assertFalse(dealer.isPrematureBlackJack(), "Dealer did not have premature Blackjack");
+        assertEquals(18, dealer.getHand().getHandValue(), "Dealer ended with 18");
+
+        // --- Player State ---
+        IPlayer player = gameManager.getPlayer();
+
+        // 1. Credit Calculation
+        // Start: 1000
+        // - 100 (Main Bet)
+        // - 50 (Insurance Bet - LOST)
+        // + 200 (Main Hand Win vs Dealer 18)
+        // = 1050
+        assertEquals(1050.0, player.getCredit(), 0.001,
+                "Credit should reflect Win on Main Hand minus Lost Insurance");
+
+        // 2. Hand State
+        assertEquals(ParticipantStates.Winner, player.getHand().get(0).getStatus(),
+                "Main hand should be a Winner");
+    }
+
 }
