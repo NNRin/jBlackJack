@@ -10,13 +10,6 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/blackjack-core" />
-          </set>
-        </option>
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/blackjack-web" />
-        <option name="modules">
-          <set>
             <option value="$PROJECT_DIR$/blackjack-web" />
           </set>
         </option>
