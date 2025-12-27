@@ -541,4 +541,107 @@ class BlackJackRoundTest {
                 "Original bet amount remains recorded on the hand");
     }
 
+    @Test
+    void testPlayerTakesInsurance_DealerHasBlackJack_Breakeven() {
+        MockDeck mockDeck = new MockDeck();
+
+        // 1. Define Deck Sequence
+        // Note: Dealer Card 1 is the "Upcard" (Visible). Dealer Card 2 is the "Hole Card".
+        // To trigger insurance, Upcard must be an Ace.
+        // To have Blackjack, Hole Card must be a 10-value.
+        mockDeck.setDeckSequence(
+                // Initial Deal
+                new Card(Suits.Hearts, Facevalues.Ace),    // Dealer Card 1 (Ace) -> Triggers Insurance Offer
+                new Card(Suits.Clubs, Facevalues.King),    // Dealer Card 2 (King) -> Hidden, completes BJ
+                new Card(Suits.Spades, Facevalues.Ten),    // Player Card 1 (10)
+                new Card(Suits.Diamonds, Facevalues.Ten)   // Player Card 2 (10) -> Player: 20
+                // No further cards needed; round ends immediately upon revealing BJ.
+        );
+
+        // 2. Setup
+        IFacevalueCalculator facevalueCalculator = new FacevalueCalculator();
+        IPayoutCalculator payoutCalculator = new PayoutCalculator();
+        double initialCredit = 1000.0;
+
+        ISingePlayerGameManager gameManager = new SinglePlayerGameManager(
+                new Dealer(facevalueCalculator, payoutCalculator),
+                new Player("You", initialCredit, facevalueCalculator, payoutCalculator),
+                mockDeck,
+                new RoundResultCalculator()
+        );
+
+        double betAmount = 100.0;
+        gameManager.placeBet(betAmount);
+
+        // ==============================================================================================
+        // 3. Verify Intermediate State (Offering Insurance)
+        // ==============================================================================================
+
+        // Assert that the game stopped to offer insurance
+        assertEquals(GameState.OfferingInsurance, gameManager.getGameState(),
+                "Game must be in OfferingInsurance state when Dealer shows Ace");
+
+        // Check Player Status
+        assertEquals(ParticipantStates.Insuring, gameManager.getPlayer().getHand().get(0).getStatus(),
+                "Player hand status should be 'Insuring'");
+
+        // Check Surrender is disabled during insurance phase
+        assertFalse(gameManager.getPlayer().isSurrenderAvailable(),
+                "Surrender should not be available during insurance offer");
+
+        // ==============================================================================================
+        // 4. Execution Phase
+        // ==============================================================================================
+
+        // --- Action: Take Insurance ---
+        // Player pays 50.0 (half bet).
+        // Manager checks Dealer Hole Card -> It's a King (Blackjack).
+        // Round ends immediately.
+        gameManager.takeAction(Actions.Insurance);
+
+        // ==============================================================================================
+        // 5. Meticulous End-State Assertions
+        // ==============================================================================================
+
+        // --- Game Manager State ---
+        assertEquals(GameState.RoundOver, gameManager.getGameState(),
+                "Game must be in RoundOver state after Dealer reveals BlackJack");
+
+        // --- Dealer State ---
+        IDealer dealer = gameManager.getDealer();
+        assertFalse(dealer.isHiddenHand(), "Dealer hand must be revealed");
+        assertFalse(dealer.isPrematureBlackJack(), "Dealer should signal premature Blackjack");
+        assertTrue(dealer.getHand().isNaturalBlackJack(), "Dealer hand is a Natural Blackjack");
+
+        // --- Player State ---
+        IPlayer player = gameManager.getPlayer();
+
+        // 1. Credit Check (Breakeven Logic)
+        // Start: 1000
+        // - 100 (Main Bet)
+        // - 50 (Insurance Bet)
+        // + 0 (Main Hand Payout - Loser)
+        // + 150 (Insurance Payout: 50 stake + 100 Win [2:1])
+        // = 1000
+        assertEquals(1000.0, player.getCredit(), 0.001,
+                "Credit should be restored (Breakeven) when Insurance wins and Main hand loses");
+
+        // 2. Insurance Flags
+        assertTrue(player.isInsuranceBought(), "Insurance Bought flag should be true");
+        assertTrue(player.isInsuranceWon(), "Insurance Won flag should be true");
+
+        // Note: Depending on implementation, getInsuranceBet might return the amount (50.0)
+        // or reset to 0 after payout. Assuming it retains the record for the round result:
+        assertEquals(betAmount / 2, player.getInsuranceBet(), 0.001,
+                "Insurance bet was 50.0");
+
+        // --- Player Hand State ---
+        IHand hand = player.getHand().get(0);
+
+        // The main hand lost to the Dealer's Blackjack
+        assertEquals(ParticipantStates.Loser, hand.getStatus(),
+                "Main hand should be a Loser against Dealer Blackjack");
+        assertEquals(20, hand.getHandValue(), "Player hand value is 20");
+    }
+
 }
