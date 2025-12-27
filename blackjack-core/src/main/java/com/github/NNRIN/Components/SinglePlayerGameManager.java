@@ -16,15 +16,27 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
     private boolean wasStackReshuffled = false;
     private GameState gameState;
     private IRoundResultCalculator roundResultCalculator;
+    private String id;
 
     public SinglePlayerGameManager(IDealer dealer, IPlayer player, IPlayingDeck playingDeck,
                                    IRoundResultCalculator roundResultCalculator) {
+        this(dealer, player, playingDeck, roundResultCalculator, "");
+    }
+
+    public SinglePlayerGameManager(IDealer dealer, IPlayer player, IPlayingDeck playingDeck,
+                                   IRoundResultCalculator roundResultCalculator, String id) {
         this.dealer = dealer;
         this.player = player;
         this.playingDeck = playingDeck;
         this.roundResultCalculator = roundResultCalculator;
+        this.id = id;
 
         initializeBettingPhase();
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 
     private void initializeBettingPhase() {

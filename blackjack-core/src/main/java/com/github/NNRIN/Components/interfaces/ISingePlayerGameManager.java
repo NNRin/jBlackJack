@@ -22,4 +22,6 @@ public interface ISingePlayerGameManager {
     void placeBet(double bet);
 
     GameState getGameState();
+
+    String getId();
 }

@@ -13,13 +13,18 @@ import com.github.NNRIN.Participants.Player;
 
 public class BlackJack {
     public static ISingePlayerGameManager getSingleplayerGame() {
+        return getSingleplayerGame("");
+    }
+
+    public static ISingePlayerGameManager getSingleplayerGame(String id) {
         IFacevalueCalculator facevalueCalculator = new FacevalueCalculator();
         IPayoutCalculator payoutCalculator = new PayoutCalculator();
 
         return new SinglePlayerGameManager(new Dealer(facevalueCalculator, payoutCalculator),
                 new Player("You", 10_000, facevalueCalculator, payoutCalculator),
                 new PlayingDeck(6),
-                new RoundResultCalculator()
+                new RoundResultCalculator(),
+                id
         );
 
     }
