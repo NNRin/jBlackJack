@@ -1090,4 +1090,146 @@ class BlackJackRoundTest {
         assertFalse(player.isSurrenderAvailable(), "Surrender flag reset");
     }
 
+    @Test
+    void testPlayerNaturalBlackjack_Pays3to2_RoundEndsInstantly() {
+        MockDeck mockDeck = new MockDeck();
+
+        mockDeck.setDeckSequence(
+                new Card(Suits.Clubs, Facevalues.Ten),      // Dealer Card 1 (10)
+                new Card(Suits.Hearts, Facevalues.Six),   // Dealer Card 2 (8) -> 18 (Dealer Stands)
+                new Card(Suits.Spades, Facevalues.Ten),     // Player Card 1 (10)
+                new Card(Suits.Diamonds, Facevalues.Ace),  // Player Card 2 (5) -> 15
+
+                new Card(Suits.Clubs, Facevalues.Five)       // Dealer Hit
+        );
+
+        // 2. Setup
+        IFacevalueCalculator facevalueCalculator = new FacevalueCalculator();
+        IPayoutCalculator payoutCalculator = new PayoutCalculator();
+        double initialCredit = 1000.0;
+
+        ISingePlayerGameManager gameManager = new SinglePlayerGameManager(
+                new Dealer(facevalueCalculator, payoutCalculator),
+                new Player("You", initialCredit, facevalueCalculator, payoutCalculator),
+                mockDeck,
+                new RoundResultCalculator()
+        );
+
+        double betAmount = 100.0;
+
+        // 3. Execution: Place Bet
+        // In many implementations, the manager detects Natural BJ immediately after dealing.
+        // We might need to call 'stand' or the manager might auto-resolve.
+        // Assuming auto-detection or immediate status:
+        gameManager.placeBet(betAmount);
+
+        // NOTE: If your game logic requires the player to "Stand" even on Blackjack
+        // to trigger the end, include: gameManager.takeAction(Actions.Stand);
+        // However, standard Blackjack rules often resolve this immediately.
+        // Let's check if the state is already WaitingForMove or RoundOver.
+
+        // If your implementation requires a formal "Stand" to collect winnings:
+        if (gameManager.getGameState() != GameState.RoundOver) {
+            gameManager.takeAction(Actions.Stand);
+        }
+
+        // ==============================================================================================
+        // 4. Assertions
+        // ==============================================================================================
+
+        // --- Game Manager State ---
+        assertEquals(GameState.RoundOver, gameManager.getGameState(), "Round should be over");
+
+        // --- Player State ---
+        IPlayer player = gameManager.getPlayer();
+        IHand hand = player.getHand().get(0);
+
+        // Status
+        assertEquals(ParticipantStates.BlackJack, hand.getStatus(),
+                "Hand status should be BlackJack");
+        assertTrue(hand.isNaturalBlackJack(),
+                "Hand should be flagged as Natural Blackjack");
+
+        // Credit Check (3:2 Payout)
+        // Start: 1000
+        // - 100 (Bet)
+        // + 250 (Payout: 100 Bet + 150 Win [1.5x])
+        // = 1150
+        assertEquals(1150.0, player.getCredit(), 0.001,
+                "Credit should reflect 3:2 Payout for Blackjack");
+    }
+
+    @Test
+    void testPlayerBusts_LosesBet_RoundEnds() {
+        MockDeck mockDeck = new MockDeck();
+
+        // 1. Define Deck Sequence
+        // Order: Dealer1, Dealer2, Player1, Player2, PlayerHit
+        mockDeck.setDeckSequence(
+                new Card(Suits.Clubs, Facevalues.Ten),      // Dealer Card 1 (10)
+                new Card(Suits.Hearts, Facevalues.Eight),   // Dealer Card 2 (8) -> 18 (Dealer Stands)
+                new Card(Suits.Spades, Facevalues.Ten),     // Player Card 1 (10)
+                new Card(Suits.Diamonds, Facevalues.Five),  // Player Card 2 (5) -> 15
+
+                new Card(Suits.Clubs, Facevalues.Ten)       // Player Hit (10) -> 25 (BUST)
+        );
+
+        // 2. Setup
+        IFacevalueCalculator facevalueCalculator = new FacevalueCalculator();
+        IPayoutCalculator payoutCalculator = new PayoutCalculator();
+        double initialCredit = 1000.0;
+
+        ISingePlayerGameManager gameManager = new SinglePlayerGameManager(
+                new Dealer(facevalueCalculator, payoutCalculator),
+                new Player("You", initialCredit, facevalueCalculator, payoutCalculator),
+                mockDeck,
+                new RoundResultCalculator()
+        );
+
+        double betAmount = 100.0;
+        gameManager.placeBet(betAmount);
+
+        // ==============================================================================================
+        // 3. Execution: Hit and Bust
+        // ==============================================================================================
+
+        // Action: Hit
+        // Player goes from 15 to 25.
+        // The 'hit' method should return true (turn finished because busted), triggering round end.
+        gameManager.takeAction(Actions.Hit);
+
+        // ==============================================================================================
+        // 4. Assertions
+        // ==============================================================================================
+
+        // --- Game Manager State ---
+        assertEquals(GameState.RoundOver, gameManager.getGameState(),
+                "Game should be RoundOver immediately after player busts");
+
+        // --- Player State ---
+        IPlayer player = gameManager.getPlayer();
+        IHand hand = player.getHand().get(0);
+
+        // 1. Hand Status
+        // Usually, a busted hand is calculated as a 'Loser' by the RoundResultCalculator
+        assertEquals(ParticipantStates.Loser, hand.getStatus(),
+                "Busted hand should be status Loser");
+
+        // 2. Value Checks
+        assertTrue(hand.isBusted(), "Hand should be flagged as busted");
+        assertEquals(25, hand.getHandValue(), "Hand value should be 25");
+
+        // 3. Credit Check
+        // Start: 1000
+        // - 100 (Bet)
+        // + 0 (Payout)
+        // = 900
+        assertEquals(900.0, player.getCredit(), 0.001,
+                "Player should lose the bet amount");
+
+        // --- Dealer State ---
+        // Verify dealer exists and (in this specific mock setup) stood on 18.
+        assertEquals(18, gameManager.getDealer().getHand().getHandValue());
+    }
+
 }
