@@ -1016,4 +1016,78 @@ class BlackJackRoundTest {
         assertEquals(3, hand2.getCardAmount(), "Hand 2 has 2 cards (8, 3) + 1 DD card = 3 cards");
     }
 
+    @Test
+    void testPlayerPush_BetReturned_NoNetChange() {
+        MockDeck mockDeck = new MockDeck();
+
+        // 1. Define Deck Sequence
+        // Order: Dealer1, Dealer2, Player1, Player2
+        mockDeck.setDeckSequence(
+                // Initial Deal
+                new Card(Suits.Clubs, Facevalues.Ten),      // Dealer Card 1 (10)
+                new Card(Suits.Hearts, Facevalues.King),    // Dealer Card 2 (10) -> Total 20
+                new Card(Suits.Spades, Facevalues.Queen),   // Player Card 1 (10)
+                new Card(Suits.Diamonds, Facevalues.Jack)   // Player Card 2 (10) -> Total 20
+        );
+
+        // 2. Setup
+        IFacevalueCalculator facevalueCalculator = new FacevalueCalculator();
+        IPayoutCalculator payoutCalculator = new PayoutCalculator();
+        double initialCredit = 1000.0;
+
+        ISingePlayerGameManager gameManager = new SinglePlayerGameManager(
+                new Dealer(facevalueCalculator, payoutCalculator),
+                new Player("You", initialCredit, facevalueCalculator, payoutCalculator),
+                mockDeck,
+                new RoundResultCalculator()
+        );
+
+        double betAmount = 100.0;
+        gameManager.placeBet(betAmount);
+
+        // ==============================================================================================
+        // 3. Execution Phase
+        // ==============================================================================================
+
+        // Action: Stand
+        // Player stands on 20. Dealer has 20, so Dealer also stands (logic typically stands on 17+).
+        gameManager.takeAction(Actions.Stand);
+
+        // ==============================================================================================
+        // 4. Meticulous End-State Assertions
+        // ==============================================================================================
+
+        // --- Game Manager State ---
+        assertEquals(GameState.RoundOver, gameManager.getGameState(),
+                "Game must be in RoundOver state");
+
+        // --- Dealer State ---
+        IDealer dealer = gameManager.getDealer();
+        assertFalse(dealer.isHiddenHand(), "Dealer hand must be revealed");
+        assertEquals(20, dealer.getHand().getHandValue(), "Dealer ends with 20");
+
+        // --- Player State ---
+        IPlayer player = gameManager.getPlayer();
+
+        // 1. Credit Check (Breakeven)
+        // Start: 1000
+        // - 100 (Bet)
+        // + 100 (Push Payout: Returns the Bet)
+        // = 1000
+        assertEquals(1000.0, player.getCredit(), 0.001,
+                "Credit should be exactly equal to initial credit (Bet returned)");
+
+        // 2. Hand State
+        IHand hand = player.getHand().get(0);
+
+        assertEquals(ParticipantStates.Push, hand.getStatus(),
+                "Hand status should be Push");
+
+        assertEquals(20, hand.getHandValue(),
+                "Player hand value is 20");
+
+        // 3. Flags
+        assertFalse(player.isSurrenderAvailable(), "Surrender flag reset");
+    }
+
 }
