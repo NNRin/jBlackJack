@@ -725,4 +725,107 @@ class BlackJackRoundTest {
         assertEquals(20, hand.getHandValue(), "Player hand value is 20");
     }
 
+    @Test
+    void testTwoRoundsBackToBack_EnsuresProperReset() {
+        MockDeck mockDeck = new MockDeck();
+
+        // 1. Define Deck Sequence for TWO full rounds
+        mockDeck.setDeckSequence(
+                // --- Round 1 Cards ---
+                new Card(Suits.Clubs, Facevalues.Ten),    // Dealer C1 (10)
+                new Card(Suits.Clubs, Facevalues.Six),    // Dealer C2 (6) -> 16
+                new Card(Suits.Hearts, Facevalues.Ten),   // Player C1 (10)
+                new Card(Suits.Diamonds, Facevalues.Ten), // Player C2 (10) -> 20 (Stand)
+                new Card(Suits.Spades, Facevalues.Ten),   // Dealer Hit (10) -> 26 (Bust)
+
+                // --- Round 2 Cards ---
+                // Note: These are drawn only AFTER NextRound is called
+                new Card(Suits.Hearts, Facevalues.Ten),   // Dealer C1 (10)
+                new Card(Suits.Diamonds, Facevalues.Ten), // Dealer C2 (10) -> 20 (Stand)
+                new Card(Suits.Spades, Facevalues.Ten),   // Player C1 (10)
+                new Card(Suits.Clubs, Facevalues.Six)     // Player C2 (6)  -> 16 (Stand)
+        );
+
+        // 2. Setup
+        IFacevalueCalculator facevalueCalculator = new FacevalueCalculator();
+        IPayoutCalculator payoutCalculator = new PayoutCalculator();
+        double initialCredit = 1000.0;
+
+        ISingePlayerGameManager gameManager = new SinglePlayerGameManager(
+                new Dealer(facevalueCalculator, payoutCalculator),
+                new Player("You", initialCredit, facevalueCalculator, payoutCalculator),
+                mockDeck,
+                new RoundResultCalculator()
+        );
+
+        // ==============================================================================================
+        // ROUND 1 EXECUTION
+        // ==============================================================================================
+
+        gameManager.placeBet(100.0);       // Start R1
+        gameManager.takeAction(Actions.Stand); // Player Stands on 20 -> Dealer Busts -> Win
+
+        // Assert Round 1 End State
+        assertEquals(GameState.RoundOver, gameManager.getGameState(), "Round 1 should be over");
+        assertEquals(1100.0, gameManager.getPlayer().getCredit(), 0.001, "Player should have won Round 1");
+
+        // ==============================================================================================
+        // RESET PHASE ASSERTIONS
+        // ==============================================================================================
+
+        // Action: Trigger Next Round
+        gameManager.takeAction(Actions.NextRound);
+
+        // Assert Clean Slate
+        // 1. GameState
+        assertEquals(GameState.WaitingForBet, gameManager.getGameState(),
+                "Game should be back to WaitingForBet");
+
+        // 2. Dealer Reset
+        IDealer dealer = gameManager.getDealer();
+        assertEquals(0, dealer.getHand().getCardAmount(),
+                "Dealer hand should be empty after reset");
+        assertTrue(dealer.isHiddenHand(),
+                "Dealer hand should be set to hidden again");
+
+        // 3. Player Reset
+        IPlayer player = gameManager.getPlayer();
+        assertEquals(1, player.getHand().size(),
+                "Player should be reset to exactly 1 hand");
+        assertEquals(0, player.getHand().get(0).getCardAmount(),
+                "Player hand should be empty");
+
+        // 4. Flags
+        assertFalse(player.isSurrenderAvailable(), "Surrender flag should be reset");
+        assertFalse(player.isInsuranceBought(), "Insurance flag should be reset");
+
+        // ==============================================================================================
+        // ROUND 2 EXECUTION
+        // ==============================================================================================
+
+        gameManager.placeBet(100.0);       // Start R2
+        // Player has 16 (10+6), Dealer has 20 (10+10)
+        gameManager.takeAction(Actions.Stand); // Player Stands -> Loses to Dealer's 20
+
+        // ==============================================================================================
+        // FINAL END STATE ASSERTIONS
+        // ==============================================================================================
+
+        // 1. Credit Check (Breakeven)
+        // 1000 + 100 (R1 Win) - 100 (R2 Loss) = 1000
+        assertEquals(1000.0, player.getCredit(), 0.001,
+                "Credit should reflect Win then Loss");
+
+        // 2. Round 2 Specifics
+        assertEquals(ParticipantStates.Loser, player.getHand().get(0).getStatus(),
+                "Player should be Loser in Round 2");
+
+        // Verify we are actually looking at the Round 2 cards
+        assertEquals(16, player.getHand().get(0).getHandValue(),
+                "Player hand value should be 16 (from Round 2 cards)");
+
+        assertEquals(20, dealer.getHand().getHandValue(),
+                "Dealer hand value should be 20 (from Round 2 cards)");
+    }
+
 }
