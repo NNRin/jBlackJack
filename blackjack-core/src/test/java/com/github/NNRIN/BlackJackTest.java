@@ -911,4 +911,109 @@ class BlackJackRoundTest {
                 "Main hand should be a Winner");
     }
 
+    @Test
+    void testSplit_ThenHitHand1_ThenDoubleDownHand2_BothWin() {
+        MockDeck mockDeck = new MockDeck();
+
+        // 1. Define Deck Sequence
+        // Order: Dealer1, Dealer2, Player1, Player2, SplitC1, SplitC2, H1_Hit, H2_Double, Dealer_Hit
+        mockDeck.setDeckSequence(
+                // Initial Deal
+                new Card(Suits.Clubs, Facevalues.Ten),      // Dealer Card 1 (10)
+                new Card(Suits.Clubs, Facevalues.Six),      // Dealer Card 2 (6) -> 16
+                new Card(Suits.Hearts, Facevalues.Eight),   // Player Card 1 (8)
+                new Card(Suits.Spades, Facevalues.Eight),   // Player Card 2 (8) -> 16
+
+                // Split Cards (Popped immediately upon split)
+                new Card(Suits.Diamonds, Facevalues.Three), // Card for Hand 1 (8 + 3 = 11)
+                new Card(Suits.Diamonds, Facevalues.Three), // Card for Hand 2 (8 + 3 = 11)
+
+                // Hand 1 Action: Hit
+                new Card(Suits.Hearts, Facevalues.Ten),     // Hand 1 hits (11 + 10 = 21)
+
+                // Hand 2 Action: Double Down
+                new Card(Suits.Spades, Facevalues.Ten),     // Hand 2 doubles (11 + 10 = 21)
+
+                // Dealer Action (After all hands finished)
+                new Card(Suits.Spades, Facevalues.Queen)    // Dealer hits (16 + 10 = 26 BUST)
+        );
+
+        // 2. Setup
+        IFacevalueCalculator facevalueCalculator = new FacevalueCalculator();
+        IPayoutCalculator payoutCalculator = new PayoutCalculator();
+        double initialCredit = 1000.0;
+
+        ISingePlayerGameManager gameManager = new SinglePlayerGameManager(
+                new Dealer(facevalueCalculator, payoutCalculator),
+                new Player("You", initialCredit, facevalueCalculator, payoutCalculator),
+                mockDeck,
+                new RoundResultCalculator()
+        );
+
+        double initialBet = 100.0;
+        gameManager.placeBet(initialBet);
+
+        // ==============================================================================================
+        // 3. Execution Phase
+        // ==============================================================================================
+
+        // --- Step A: Split ---
+        // New State: Hand 1 (OnTurn), Hand 2 (Waiting)
+        gameManager.takeAction(Actions.Split);
+
+        // --- Step B: Hand 1 (Hit then Stand) ---
+        // Hit to get 21
+        gameManager.takeAction(Actions.Hit);
+        // Stand to finish Hand 1 and move to Hand 2
+        gameManager.takeAction(Actions.Stand);
+
+        // --- Step C: Hand 2 (Double Down) ---
+        // Double Down on 11. This draws one card and automatically finishes the turn.
+        gameManager.takeAction(Actions.DoubleDown);
+
+        // ==============================================================================================
+        // 4. Meticulous End-State Assertions
+        // ==============================================================================================
+
+        // --- Game Manager State ---
+        assertEquals(GameState.RoundOver, gameManager.getGameState(),
+                "Game must be in RoundOver state after last hand finishes");
+
+        // --- Dealer State ---
+        assertTrue(gameManager.getDealer().getHand().isBusted(),
+                "Dealer should be busted");
+
+        // --- Player State ---
+        IPlayer player = gameManager.getPlayer();
+
+        // 1. Credit Check
+        // Start: 1000
+        // - 100 (Bet Hand 1)
+        // - 100 (Bet Hand 2 - Split)
+        // - 100 (Double Down Hand 2)
+        // + 200 (Win Hand 1)
+        // + 400 (Win Hand 2: 200 bet * 2)
+        // = 1300
+        assertEquals(1300.0, player.getCredit(), 0.001,
+                "Credit should reflect wins on both hands (one normal, one doubled)");
+
+        // 2. Hand Analysis
+        List<IHand> hands = player.getHand();
+        assertEquals(2, hands.size(), "Player should have 2 hands");
+
+        // Hand 1 (Normal Hit & Stand)
+        IHand hand1 = hands.get(0);
+        assertEquals(ParticipantStates.Winner, hand1.getStatus());
+        assertEquals(21, hand1.getHandValue());
+        assertEquals(100.0, hand1.getBet(), 0.001);
+        assertEquals(3, hand1.getCardAmount(), "Hand 1 has 3 cards (8, 3, 10)");
+
+        // Hand 2 (Double Down)
+        IHand hand2 = hands.get(1);
+        assertEquals(ParticipantStates.Winner, hand2.getStatus());
+        assertEquals(21, hand2.getHandValue());
+        assertEquals(200.0, hand2.getBet(), 0.001, "Hand 2 bet should be doubled");
+        assertEquals(3, hand2.getCardAmount(), "Hand 2 has 2 cards (8, 3) + 1 DD card = 3 cards");
+    }
+
 }
