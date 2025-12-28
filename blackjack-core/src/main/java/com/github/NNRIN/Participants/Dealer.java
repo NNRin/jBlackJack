@@ -72,4 +72,11 @@ public class Dealer implements IDealer {
         return hand.getHandValue() < 17;
     }
 
+    @Override
+    public IDealer getPublicVersion() {
+        Dealer toReturn = new Dealer(facevalueCalculator, null);
+        toReturn.hand = this.getHand().getDealersPublicHand();
+        toReturn.isHiddenHand = this.isHiddenHand;
+        return toReturn;
+    }
 }

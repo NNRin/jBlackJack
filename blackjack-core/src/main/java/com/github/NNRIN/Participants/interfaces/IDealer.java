@@ -69,5 +69,7 @@ public interface IDealer {
     boolean isPrematureBlackJack();
 
     boolean isBelowThreshold();
+
+    IDealer getPublicVersion();
     
 }

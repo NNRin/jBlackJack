@@ -24,4 +24,12 @@ public interface ISingePlayerGameManager {
     GameState getGameState();
 
     String getId();
+
+    /**
+     * Returns the current ISinglePlayerGameManager object but with all information removed that the public / player
+     * should not be able to know. Meaning information like the hiddenCard of the dealer is removed in the public
+     * version even though it is present in the real GameManager object.
+     * @return
+     */
+    ISingePlayerGameManager getPublicGameManager();
 }

@@ -6,6 +6,7 @@ import com.github.NNRIN.Components.interfaces.ISingePlayerGameManager;
 import com.github.NNRIN.Helper.Actions;
 import com.github.NNRIN.Helper.GameState;
 import com.github.NNRIN.Helper.ParticipantStates;
+import com.github.NNRIN.Helper.SinglePlayerGameManagerPublic;
 import com.github.NNRIN.Participants.interfaces.IDealer;
 import com.github.NNRIN.Participants.interfaces.IPlayer;
 
@@ -272,5 +273,36 @@ public class SinglePlayerGameManager implements ISingePlayerGameManager {
     @Override
     public GameState getGameState() {
         return gameState;
+    }
+
+    private boolean isPlayersTurnOver() {
+        long stillOnTurnHandCount = player.getHand().stream().filter(
+                h -> {
+                    switch(h.getStatus()) {
+                        case Preparing, Betting, Insuring, WaitingForTurn, OnTurn: return true;
+                        default: return false;
+                    }
+                }
+        ).count();
+
+        return stillOnTurnHandCount == 0;
+    }
+
+    /**
+     * Returns a class (implementing ISinglePlayerGameManager) holding the data for the current gameState, but only the
+     * data that is currently classified as public knowledge. In effect meaning the dealers hidden Card won't be shown
+     * if the player has a Hand which has not finished their Turn yet.
+     * @return
+     */
+    @Override
+    public ISingePlayerGameManager getPublicGameManager() {
+        if (!dealer.isHiddenHand()) {
+            return this;
+        }else{
+            return new SinglePlayerGameManagerPublic(
+                    dealer.getPublicVersion(), player, wasStackReshuffled, gameState, id);
+        }
+
+
     }
 }

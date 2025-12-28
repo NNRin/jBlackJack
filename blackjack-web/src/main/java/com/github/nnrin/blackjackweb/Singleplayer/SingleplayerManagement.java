@@ -25,19 +25,19 @@ public class SingleplayerManagement {
     public ISingePlayerGameManager createGame() {
         ISingePlayerGameManager gameManager =  BlackJack.getSingleplayerGame(UUID.randomUUID().toString());
         saveGameState(gameManager.getId(), gameManager);
-        return gameManager;
+        return gameManager.getPublicGameManager();
     }
 
     public ISingePlayerGameManager takeActionOnGame(Actions action, String id) {
         ISingePlayerGameManager gameManager = getGameById(id);
         gameManager.takeAction(action);
-        return gameManager;
+        return gameManager.getPublicGameManager();
     }
 
     public ISingePlayerGameManager placeBet(double bet, String id) {
         ISingePlayerGameManager gameManager = getGameById(id);
         gameManager.placeBet(bet);
-        return gameManager;
+        return gameManager.getPublicGameManager();
     }
 
     private ISingePlayerGameManager getGameById(String id) {

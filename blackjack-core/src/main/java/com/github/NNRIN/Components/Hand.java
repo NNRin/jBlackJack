@@ -235,4 +235,18 @@ public class Hand implements IHand {
     public void setIsSplitHand(boolean isSplitHand) {
         this.isSplitHand = isSplitHand;
     }
+
+    @Override
+    public IHand getDealersPublicHand() {
+        Hand toReturn = new Hand(facevalueCalculator, payoutCalculator);
+        toReturn.isSplitHand = this.isSplitHand;
+        toReturn.status = this.status;
+        toReturn.bet = this.bet;
+        if(this.cards.size() != 0){
+            Card upCard = this.cards.get(0);
+            toReturn.cards.add(new Card(upCard.suit(), upCard.facevalue()));
+
+        }
+        return toReturn;
+    }
 }

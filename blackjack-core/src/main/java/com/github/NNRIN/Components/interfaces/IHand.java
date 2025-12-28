@@ -99,4 +99,6 @@ public interface IHand {
 
 
     void reset();
+
+    IHand getDealersPublicHand();
 }
