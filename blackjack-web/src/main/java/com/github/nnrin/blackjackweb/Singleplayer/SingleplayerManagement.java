@@ -4,17 +4,23 @@ import com.github.NNRIN.BlackJack;
 import com.github.NNRIN.Components.SinglePlayerGameManager;
 import com.github.NNRIN.Components.interfaces.ISingePlayerGameManager;
 import com.github.NNRIN.Helper.Actions;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.nnrin.blackjackweb.Singleplayer.web.DTOs.ActionDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class SingleplayerManagement {
 
-    private final Map<String, ISingePlayerGameManager> activeGames = new ConcurrentHashMap<>();
+    private Cache<String, ISingePlayerGameManager> gameCache = Caffeine.newBuilder()
+            .expireAfterAccess(30, TimeUnit.MINUTES)
+            .maximumSize(1000)
+            .build();
 
     public ISingePlayerGameManager createGame() {
         ISingePlayerGameManager gameManager =  BlackJack.getSingleplayerGame(UUID.randomUUID().toString());
@@ -35,11 +41,11 @@ public class SingleplayerManagement {
     }
 
     private ISingePlayerGameManager getGameById(String id) {
-        return activeGames.get(id);
+        return gameCache.getIfPresent(id);
     }
 
     private void saveGameState(String id, ISingePlayerGameManager gameState) {
-        activeGames.put(id, gameState);
+        gameCache.put(id, gameState);
     }
 
 }

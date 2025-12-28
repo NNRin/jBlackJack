@@ -27,6 +27,7 @@ dependencies {
     implementation 'org.springframework.modulith:spring-modulith-starter-core'
     implementation project(':blackjack-core')
     implementation 'org.mapstruct:mapstruct:1.6.3'
+    implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
 
     // MapStruct Processor
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
