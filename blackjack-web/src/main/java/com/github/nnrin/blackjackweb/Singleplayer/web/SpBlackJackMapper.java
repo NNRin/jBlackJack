@@ -1,8 +1,8 @@
 package com.github.nnrin.blackjackweb.Singleplayer.web;
 import com.github.NNRIN.Cards.Card;
-import com.github.NNRIN.Components.SinglePlayerGameManager;
 import com.github.NNRIN.Components.interfaces.IHand;
 import com.github.NNRIN.Components.interfaces.ISingePlayerGameManager;
+import com.github.NNRIN.Helper.Actions;
 import com.github.NNRIN.Participants.interfaces.IDealer;
 import com.github.NNRIN.Participants.interfaces.IPlayer;
 import com.github.nnrin.blackjackweb.Singleplayer.web.DTOs.*;
@@ -30,5 +30,20 @@ public interface SpBlackJackMapper {
     @Mapping(target = "wasStackReshuffled", expression = "java(gameManager.wasStackReshuffled())")
     @Mapping(target="gameState", source="gameState")
     SpBlackJackDTO toSpBlackJackDto(ISingePlayerGameManager gameManager);
+
+    default Actions toActionEnum(ActionDTO actionDTO) {
+        if (actionDTO == null || actionDTO.action() == null) {
+            return null;
+        }
+
+        try {
+            // 1. Extract the string
+            // 2. Convert to Upper Case (handles "hit" -> HIT)
+            // 3. Lookup the Enum
+            return Actions.valueOf(actionDTO.action());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid action: " + actionDTO.action());
+        }
+    }
 
 }
