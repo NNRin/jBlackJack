@@ -1,0 +1,144 @@
+/* Reset basic box model sizing */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    /* Dark mode background for high-end feel */
+    background-color: #1a1a1a;
+    color: white;
+    font-family: system-ui, sans-serif;
+}
+
+/* 1. The Wrapper: Handles the 4K/2K scaling */
+.layout-wrapper {
+    /* This prevents the layout from getting too wide on 4K screens */
+    max-width: 150em;
+
+    /* This centers the wrapper on the screen */
+    margin-inline: auto;
+
+    /* Adds breathing room on the sides so it doesn't touch edges on smaller screens */
+    padding-inline: 2rem;
+
+    /* Center vertically for this demo */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* 2. The Grid: Handles the positioning */
+.main-grid {
+    display: grid;
+    /* Create 3 equal columns */
+    grid-template-columns: repeat(1, 1fr);
+    /* Gap between items */
+    gap: 1.5rem;
+}
+
+
+.hero {
+    grid-column: 1 / -1;
+    height: 50vh;
+    background-color: #4a4a4a;
+}
+
+.player {
+    height: 35vh; /* Slight increase for controls space */
+}
+
+/* Ensure the .card container aligns items to the left */
+.card {
+    background-color: #333;
+    border-radius: 8px;
+    display: flex;
+    /* This pushes the Info box to the left and Storage to the right */
+    justify-content: flex-start;
+    align-items: stretch;
+    font-size: 1.5rem;
+    overflow: hidden;
+}
+
+/* Ensure the Info box has a fixed width so it doesn't shrink */
+.info {
+    flex: 0 0 200px; /* Adjust width as needed */
+    height: 100%;
+    background: white;
+    color: black;
+    z-index: 10;
+}
+
+/* FIX 3: Card Storage takes ALL remaining space */
+.card-storage {
+    flex: 1; /* Grow to fill width */
+    display: flex;
+    position: relative; /* Context for children */
+    background-color: transparent;
+    /* Center the HANDS within the storage, not the whole block */
+    justify-content: center;
+    align-items: center;
+}
+
+/* Updated Button Styles for the left panel */
+.action-btn {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 8px;
+    text-align: center;
+    font-size: 0.9rem;
+    margin: 3px 0;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 100%;
+}
+#btn-surrender { background-color: #d32f2f; }
+#btn-stand { background-color: #ff9800; }
+#btn-split { background-color: #2196F3; }
+
+/* Update your existing .playcard class */
+.playcard {
+    display: inline-block; /* Crucial: Ensures they sit next to each other */
+    margin: 0.1em;
+    flex-shrink: 0; /* Change to 0: Prevents cards from getting squashed if there are many */
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5); /* Optional: Adds depth */
+    background-color: white; /* Ensures transparent parts of PNGs (if any) are white */
+    border-radius: 0.1em;
+    vertical-align: middle;
+    background-color: transparent;
+}
+
+/* Helper for the container holding the cards */
+.cards-row {
+    display: flex;
+    /* Prevent wrapping so cards stay side-by-side */
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    /* Add padding to ensure the scaled cards don't hit the edges */
+    padding: 40px;
+}
+
+/* FIX: Scale up the cards */
+.cards-row .playcard {
+    /* 1. Force the cards to be ~2.5x larger */
+    transform: scale(3.6);
+
+    /* 2. Add buffer space!
+       Since the card "structurally" is still small, we need margin to
+       reserve space for the visual zoom so they don't overlap. */
+    margin: 80px 85px;
+
+    transform-origin: center;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.6); /* Optional: nice shadow */
+}
+
+.action-btn:hover {
+    background-color: #45a049;
+}
+
+p{
+    margin: 3px;
+}

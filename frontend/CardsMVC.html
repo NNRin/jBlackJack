@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cards</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/playing-cards.css"/>
+</head>
+<body>
+<!-----------------------------------------------------Site Content---------------------------------------------------->
+<div class="layout-wrapper">
+    <div class="main-grid">
+        <div class="card hero">
+            <div class="info">
+                <p>Dealer</p>
+                <p id="status-display">Status: Ready</p> <Button id="start">Start Game</Button>
+            </div>
+                <div class="card-storage">
+                </div>
+        </div>
+
+        <div class="card player">
+            <div class="info">
+                <p>You</p>
+                <p id="credit-display">Credit: $0</p> <Button id="hit">Hit</Button>
+                <Button id="stand">Stand</Button>
+            </div>
+            <div class="card-storage">
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-----------------------------------------------------Site Content---------------------------------------------------->
+<script type="module" src="CardsMVC.js"></script>
+</body>
+</html>
+
+<!-- todo: is splittable needs to be field in the player property, and if insurance is offered the view does not dis
+ play any buttons and the game is stuck, then work through js html and css to understand and refine from there with
+ animations, better display of info, and such-->
