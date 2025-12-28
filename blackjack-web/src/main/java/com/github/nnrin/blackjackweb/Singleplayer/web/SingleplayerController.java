@@ -2,6 +2,8 @@ package com.github.nnrin.blackjackweb.Singleplayer.web;
 
 import com.github.NNRIN.Components.interfaces.ISingePlayerGameManager;
 import com.github.nnrin.blackjackweb.Singleplayer.SingleplayerManagement;
+import com.github.nnrin.blackjackweb.Singleplayer.web.DTOs.ActionDTO;
+import com.github.nnrin.blackjackweb.Singleplayer.web.DTOs.BetDTO;
 import com.github.nnrin.blackjackweb.Singleplayer.web.DTOs.SpBlackJackDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +34,16 @@ public class SingleplayerController {
             @PathVariable("id") String id,
             @RequestBody ActionDTO actionDTO
     ) {
-        ISingePlayerGameManager game = singleplayerManagement.takeActionOnGame(id, actionDTO);
+        ISingePlayerGameManager game = singleplayerManagement.takeActionOnGame(
+                spBlackJackMapper.toActionEnum(actionDTO), id
+        );
 
+        return ResponseEntity.ok(spBlackJackMapper.toSpBlackJackDto(game));
+    }
+
+    @PostMapping("/{id}/bet")
+    public ResponseEntity<SpBlackJackDTO> placeBet(@PathVariable("id") String id, @RequestBody BetDTO betDTO) {
+        ISingePlayerGameManager game = singleplayerManagement.placeBet(betDTO.bet(), id);
         return ResponseEntity.ok(spBlackJackMapper.toSpBlackJackDto(game));
     }
 }
