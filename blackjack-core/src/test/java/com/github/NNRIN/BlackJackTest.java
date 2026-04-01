@@ -33,12 +33,12 @@ class BlackJackRoundTest {
     void testInitialState() {
         MockDeck mockDeck = new MockDeck();
 
-        // 2. Define the exact cards to come out of the deck
+        // Define cards to come out of the deck
         // Sequence: Player Card 1 -> Dealer Card 1 -> Player Card 2 -> Dealer Card 2
         mockDeck.setDeckSequence(
                 new Card(Suits.Hearts, Facevalues.Two),   // Dealer
                 new Card(Suits.Hearts, Facevalues.Nine),   // ^
-                new Card(Suits.Hearts, Facevalues.Ace),  // Playe
+                new Card(Suits.Hearts, Facevalues.Ace),  // Player
                 new Card(Suits.Clubs, Facevalues.King)    // ^
         );
 
@@ -51,7 +51,7 @@ class BlackJackRoundTest {
                 new RoundResultCalculator()
         );
 
-        // Check Game State----------------------------------------------------------------------------------------------
+
         assertEquals(GameState.WaitingForBet, gameManager.getGameState(),
                 "Game should be in WaitingForBet state initially");
 
@@ -62,7 +62,7 @@ class BlackJackRoundTest {
         // Ensure Actors exist
         assertNotNull(gameManager.getDealer(), "Dealer should be initialized");
         assertNotNull(gameManager.getPlayer(), "Player should be initialized");
-        // Check Dealer ----------------------------------------------------------------------------------------------
+
         IDealer dealer = gameManager.getDealer();
 
         // Dealer Specific State
@@ -79,7 +79,7 @@ class BlackJackRoundTest {
 
         assertTrue(dealerHand.getStatus() == ParticipantStates.WaitingForTurn);
 
-        // Check Player ----------------------------------------------------------------------------------------------
+
 
         IPlayer player = gameManager.getPlayer();
 
@@ -130,8 +130,7 @@ class BlackJackRoundTest {
     void testPlayerHitThenStand_PlayerWinsViaDealerBust() {
         MockDeck mockDeck = new MockDeck();
 
-        // 1. Define Deck Sequence (FIFO)
-        // Note: Based on SinglePlayerGameManager.dealInitialCards(), the order is:
+        // Define Deck Sequence (FIFO)
         // Dealer Card 1 -> Dealer Card 2 -> Player Card 1 -> Player Card 2 -> Hit Cards...
         mockDeck.setDeckSequence(
                 // Initial Deal
@@ -178,10 +177,6 @@ class BlackJackRoundTest {
         // 5. Action: Stand
         // Player freezes at 19. Dealer plays (draws 10 -> busts).
         gameManager.takeAction(Actions.Stand);
-
-        // ==============================================================================================
-        // 4. Meticulous End-State Assertions
-        // ==============================================================================================
 
         // --- Game Manager State ---
         assertEquals(GameState.RoundOver, gameManager.getGameState(),
