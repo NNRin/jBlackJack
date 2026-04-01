@@ -14,7 +14,7 @@
         <div class="card hero">
             <div class="info">
                 <p>Dealer</p>
-                <p id="status-display">Status: Ready</p> <Button id="start">Start Game</Button>
+                <p id="status-display">Status: Ready</p>
             </div>
                 <div class="card-storage">
                 </div>
@@ -22,9 +22,9 @@
 
         <div class="card player">
             <div class="info">
+                <p id="credit-display">Credit: $0</p>
                 <p>You</p>
-                <p id="credit-display">Credit: $0</p> <Button id="hit">Hit</Button>
-                <Button id="stand">Stand</Button>
+                <div id="controls-container"></div>
             </div>
             <div class="card-storage">
             </div>
@@ -37,6 +37,5 @@
 </body>
 </html>
 
-<!-- todo: is splittable needs to be field in the player property, and if insurance is offered the view does not dis
- play any buttons and the game is stuck, then work through js html and css to understand and refine from there with
- animations, better display of info, and such-->
+<!-- todo: is splittable needs to be field in the player property, and if insurance is offered the view does not display
+ any buttons and the game is stuck-->

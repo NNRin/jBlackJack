@@ -3,9 +3,9 @@ export default class Controller {
         this.model = model;
         this.view = view;
 
-        // Model Bindings
+        // model Bindings
         this.model.bindRenderDealerCards(cards => this.view.renderDealerCards(cards));
-        this.model.bindRenderPlayerHands(hands => this.view.renderPlayerHands(hands)); // Updated
+        this.model.bindRenderPlayerHands(hands => this.view.renderPlayerHands(hands));
         this.model.bindUpdateGameInfo(info => this.view.renderGameInfo(info));
         this.model.bindShowMessage(msg => this.view.showMessage(msg));
 
@@ -20,12 +20,9 @@ export default class Controller {
         this.view.bindSplit(() => this.model.sendAction('Split'));
         this.view.bindSurrender(() => this.model.sendAction('Surrender'));
 
-        // Insurance: true = Insurance, false = NoInsurance
         this.view.bindInsurance((buy) => {
             this.model.sendAction(buy ? 'Insurance' : 'NoInsurance');
         });
-
-        // Next Round
         this.view.bindNextRound(() => this.model.sendAction('NextRound'));
     }
 
@@ -38,7 +35,7 @@ export default class Controller {
         if(amount && amount > 0) {
             this.model.placeBet(amount);
         } else {
-            this.view.showMessage("Please enter a valid bet!");
+            this.view.showMessage("enter a valid bet");
         }
     }
 }

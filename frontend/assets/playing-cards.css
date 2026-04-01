@@ -1,15 +1,11 @@
 *[class^="pcard-"],
 *[class*=" pcard-"] {
-  /*display: inline-block;*/
   background-repeat: no-repeat;
   background-size: 100% 100%;
     height: auto;
 
-    /* 2. Lock the shape so it doesn't squash */
+    /*fixed size*/
     aspect-ratio: 223 / 324;
-
-    /* 3. Now you can scale it using width alone! */
-     /* Example: Try changing this value, the card will scale perfectly */
 
      width: 100%;
      max-width: 223px;

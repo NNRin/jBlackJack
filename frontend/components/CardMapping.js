@@ -11,11 +11,10 @@ export const CardMapping = {
         'Ten': '10', 'Jack': 'j', 'Queen': 'q', 'King': 'k', 'Ace': 'a'
     },
     getShortCode(suit, face) {
-        // If it's a back card
         if (suit === 'back') return 'back';
 
+        // map short codes
         const s = this.suits[suit] || suit;
-        // Check if face is already a number/shortcode or needs mapping
         const f = this.faces[face] || face;
         return { suit: s, face: f };
     }

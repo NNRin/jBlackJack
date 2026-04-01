@@ -1,8 +1,7 @@
 import {Playcard} from "./components/Playcard.js";
-import {CardMapping} from "./components/CardMapping.js"; // Don't forget the mapping file from step 1
+import {CardMapping} from "./components/CardMapping.js";
 
 export default class Model {
-    // Current state of the game
     state = {
         id: null,
         gameState: "WaitingForBet",
@@ -21,16 +20,14 @@ export default class Model {
     };
 
     BASE_URL = 'http://localhost:8080/sp/blackjack';
-
     constructor() {}
 
-    bindRenderDealerCards(callback) { this.renderDealerCards = callback; }
-    bindRenderPlayerHands(callback) { this.renderPlayerHands = callback; } // Renamed to Hands (plural)
+    bindRenderDealerCards(callback) { this.renderDealerCards = callback;}
+    bindRenderPlayerHands(callback) { this.renderPlayerHands = callback; }
     bindUpdateGameInfo(callback) { this.updateGameInfo = callback; }
-    bindShowMessage(callback) { this.showMessage = callback; } // New: for reshuffle/errors
+    bindShowMessage(callback){this.showMessage = callback; }
 
-    // --- API Interactions (Same as before) ---
-    async createGame() { /* ... implementation from previous step ... */
+    async createGame() {
         this.post(this.BASE_URL);
     }
 
@@ -44,12 +41,11 @@ export default class Model {
         this.post(`${this.BASE_URL}/${this.state.id}/action`, { action: actionName });
     }
 
-    // Helper for fetch calls to reduce redundancy
     async post(url, body = null) {
         try {
             const options = {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: {'Content-Type': 'application/json'}
             };
             if (body) options.body = JSON.stringify(body);
 
@@ -59,28 +55,25 @@ export default class Model {
         } catch (e) { console.error("API Error:", e); }
     }
 
-    // --- State Logic ---
+    // handle state logic
     syncState(data) {
         this.state = data;
 
-        // 1. Reshuffle Notification
         if (data.wasStackReshuffled) {
             if(this.showMessage) this.showMessage("Deck was reshuffled!");
-            // Note: In a real app, you might want to reset this flag locally or wait for next response
+            // todo: animate
         }
 
-        // 2. Dealer Cards
         let displayDealerCards = [];
         if (data.dealer.hand && data.dealer.hand.cards) {
             displayDealerCards = data.dealer.hand.cards.map(c => new Playcard(c.suit, c.faceValue));
-            if (data.dealer.isHiddenHand && data.gameState !== 'RoundOver' && displayDealerCards.length > 0) {
+            if(data.dealer.isHiddenHand && data.gameState !== 'RoundOver' && displayDealerCards.length > 0) {
                 displayDealerCards.push(new Playcard('back', 'back'));
             }
         }
         this.renderDealerCards(displayDealerCards);
 
-        // 3. Player Hands (Handle Splits) [cite: 32]
-        // Map over the array of hands.
+
         const displayHands = data.player.hands.map(hand => {
             return {
                 cards: hand.cards.map(c => new Playcard(c.suit, c.faceValue)),
@@ -90,12 +83,11 @@ export default class Model {
         });
         this.renderPlayerHands(displayHands);
 
-        // 4. Update UI Info
         this.updateGameInfo({
             credit: data.player.credit,
             status: data.gameState,
-            surrenderAvailable: data.player.isSurrenderAvailable, // [cite: 51]
-            insuranceBought: data.player.isInsuranceBought,       // [cite: 52]
+            surrenderAvailable: data.player.isSurrenderAvailable,
+            insuranceBought: data.player.isInsuranceBought,
             insuranceBet: data.player.insuranceBet,
             gameActive: !!data.id
         });

@@ -10,15 +10,13 @@ export class Playcard {
         let className;
 
         if (this.suit === 'back' || this.face === 'back') {
-            className = 'pcard-back'; // Assuming your CSS has a back class
+            className = 'pcard-back';
         } else {
             const mapped = CardMapping.getShortCode(this.suit, this.face);
-            // Result format: pcard-4d, pcard-kh, etc.
+            // example format for css class: pcard-4d
             className = `pcard-${mapped.face}${mapped.suit}`;
         }
-
         const newCard = document.createElement('span');
-        // Add both classes: specific card class and layout class
         newCard.className = `${className} playcard`;
         container.appendChild(newCard);
     }
