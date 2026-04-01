@@ -49,3 +49,16 @@ dependencyManagement {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+
+// Serve frontend in static folder of Spring boot app
+// package via task
+
+tasks.named('processResources') {
+    // Copy frontend into Spring Boot static resource folder
+    from("${project.rootDir}/frontend") {
+        into("static")
+        exclude("**/.DS_Store")
+    }
+}
+
