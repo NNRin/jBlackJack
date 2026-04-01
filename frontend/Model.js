@@ -20,7 +20,9 @@ export default class Model {
     };
 
     BASE_URL = 'http://localhost:8080/sp/blackjack';
-    constructor() {}
+    constructor() {
+        this.initialCreditAmount = 0;
+    }
 
     bindRenderDealerCards(callback) { this.renderDealerCards = callback;}
     bindRenderPlayerHands(callback) { this.renderPlayerHands = callback; }
@@ -83,8 +85,25 @@ export default class Model {
         });
         this.renderPlayerHands(displayHands);
 
+        // Parse data from response to properly display in frontend
+        if (data.gameState === 'WaitingForBet') {
+            this.initialCreditAmount = data.player.credit;
+        }
+
+        let calculatedCreditToDisplay = data.player.credit;
+        let roundWinningsLocal = 0;
+        if (data.gameState === 'RoundOver') {
+            roundWinningsLocal = data.player.credit - this.initialCreditAmount;
+            calculatedCreditToDisplay = this.initialCreditAmount;
+        }
+
+        if (roundWinningsLocal <= 0) {
+            calculatedCreditToDisplay = data.player.credit;
+        }
+
         this.updateGameInfo({
-            credit: data.player.credit,
+            credit: calculatedCreditToDisplay,
+            roundWinnings: roundWinningsLocal,
             status: data.gameState,
             surrenderAvailable: data.player.isSurrenderAvailable,
             insuranceBought: data.player.isInsuranceBought,

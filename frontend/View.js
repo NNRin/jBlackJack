@@ -52,7 +52,10 @@ export default class View {
 
     renderGameInfo(info) {
         this.creditDisplay.innerText = `Credit: $${info.credit}`;
-        if (info.insuranceBought) this.statusDisplay.innerText += " (Insured)";
+        this.statusDisplay.innerText = "";
+        if (info.insuranceBought) {
+            this.statusDisplay.innerText = "(Insured)";
+        }
 
         // hide buttons
         this.hideAllControls();
@@ -65,6 +68,10 @@ export default class View {
 
         if (info.status === 'RoundOver') {
             this.show(this.btnNextRound);
+            if (info.roundWinnings > 0) {
+                this.creditDisplay.innerText += `\nWinnings: + $${info.roundWinnings}`;
+                this.creditDisplay.innerText += `\nNew Credit: $${info.roundWinnings + info.credit}`;
+            }
             return;
         }
 
