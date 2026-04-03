@@ -20,4 +20,8 @@ export class Playcard {
         newCard.className = `${className} playcard`;
         container.appendChild(newCard);
     }
+
+    getValue() {
+        return CardMapping.getValue(this.face);
+    }
 }

@@ -1,5 +1,6 @@
 import {Playcard} from "./components/Playcard.js";
 import {CardMapping} from "./components/CardMapping.js";
+import {CardHelper} from "./components/CardHelper.js";
 
 export default class Model {
     state = {
@@ -80,9 +81,11 @@ export default class Model {
             return {
                 cards: hand.cards.map(c => new Playcard(c.suit, c.faceValue)),
                 status: hand.status,
-                bet: hand.bet
+                bet: hand.bet,
+                handValue: CardHelper.getHandValue(hand),
             };
         });
+
         this.renderPlayerHands(displayHands);
 
         // Parse data from response to properly display in frontend

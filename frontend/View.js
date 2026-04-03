@@ -30,14 +30,18 @@ export default class View {
             handDiv.style.border = hand.status === 'OnTurn' ? '2px solid #ffd700' : '2px solid transparent';
 
             const info = document.createElement('div');
-            info.innerText = `Hand ${index + 1} ($${hand.bet})`;
+            info.innerText = `($${hand.bet})`;
             info.className = 'hand-card';
             handDiv.appendChild(info);
 
             const cardContainer = document.createElement('div');
             cardContainer.className = 'cards-row';
-
             hand.cards.forEach(c => c.render(cardContainer));
+
+            let phasesToNotShowHandValue = ["Preparing", "Betting", "Insuring", "WaitingForTurn", "OnTurn"];
+            if (!phasesToNotShowHandValue.includes(hand.status)) { // display hand value when turn finished
+                info.innerText += ` Value = ${hand.handValue}`;
+            }
 
             handDiv.appendChild(cardContainer);
             storage.appendChild(handDiv);
@@ -71,6 +75,10 @@ export default class View {
             if (info.roundWinnings > 0) {
                 this.creditDisplay.innerText += `\nWinnings: + $${info.roundWinnings}`;
                 this.creditDisplay.innerText += `\nNew Credit: $${info.roundWinnings + info.credit}`;
+            } else if (info.roundWinnings < 0) {
+                this.creditDisplay.innerText += `\nRound Lost`;
+            } else {
+                this.creditDisplay.innerText += `\nRound Tie`;
             }
             return;
         }

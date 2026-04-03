@@ -10,6 +10,9 @@ export const CardMapping = {
         'Six': '6', 'Seven': '7', 'Eight': '8', 'Nine': '9',
         'Ten': '10', 'Jack': 'j', 'Queen': 'q', 'King': 'k', 'Ace': 'a'
     },
+    values: {
+        'j': 10, 'q': 10, 'k': 10, 'a': 11,
+    },
     getShortCode(suit, face) {
         if (suit === 'back') return 'back';
 
@@ -17,5 +20,9 @@ export const CardMapping = {
         const s = this.suits[suit] || suit;
         const f = this.faces[face] || face;
         return { suit: s, face: f };
-    }
+    },
+    getValue(face) {
+        const shortCode = this.faces[face] || face;
+        return this.values[shortCode] || parseInt(shortCode, 10);
+    },
 };
