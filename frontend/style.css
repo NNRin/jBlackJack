@@ -109,7 +109,7 @@ body {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    padding-top: 1.5rem;
+    padding-top: 0rem;
     border-radius: 8px;
 
 }
