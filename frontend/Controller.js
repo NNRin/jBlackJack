@@ -4,7 +4,7 @@ export default class Controller {
         this.view = view;
 
         // model Bindings
-        this.model.bindRenderDealerCards(cards => this.view.renderDealerCards(cards));
+        this.model.bindRenderDealerCards(data => this.view.renderDealerCards(data));
         this.model.bindRenderPlayerHands(hands => this.view.renderPlayerHands(hands));
         this.model.bindUpdateGameInfo(info => this.view.renderGameInfo(info));
         this.model.bindShowMessage(msg => this.view.showMessage(msg));

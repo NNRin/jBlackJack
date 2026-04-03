@@ -4,6 +4,7 @@ export default class View {
         this.creditDisplay = document.getElementById('credit-display');
         this.statusDisplay = document.getElementById('status-display');
         this.controlsContainer = document.getElementById('controls-container');
+        this.dealerValueMessage = document.getElementById('dealer-info');
         this.betInput = this.createInput('number', 'bet-input', 'Amount');
         this.btnStart = this.createButton('Start Game', 'btn-start');
         this.btnBet = this.createButton('Place Bet', 'btn-bet');
@@ -48,10 +49,16 @@ export default class View {
         });
     }
 
-    renderDealerCards(cards) {
-        const storage = document.querySelector('.card.hero .card-storage');
+    renderDealerCards(data) {
+        const storage = document.querySelector('#dealer-cards');
         storage.innerHTML = '';
-        cards.forEach(c => c.render(storage));
+        data.cards.forEach(c => c.render(storage))
+
+        const info = document.getElementById("dealer-info");
+        let phasesToNotShowHandValue = ["RoundOver"];
+        if (phasesToNotShowHandValue.includes(data.gameState)) { // display hand value when turn finished
+            info.innerText = `Value = ${data.handValue}`;
+        }
     }
 
     renderGameInfo(info) {
@@ -86,6 +93,7 @@ export default class View {
         if (info.status === 'WaitingForBet') {
             this.show(this.betInput);
             this.show(this.btnBet);
+            this.dealerValueMessage.innerText ="";
             return;
         }
 

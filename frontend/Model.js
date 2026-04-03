@@ -74,7 +74,16 @@ export default class Model {
                 displayDealerCards.push(new Playcard('back', 'back'));
             }
         }
-        this.renderDealerCards(displayDealerCards);
+
+        let dealerHandValue = CardHelper.getHandValue(data.dealer.hand);
+
+        const dealerData = {
+            cards: displayDealerCards,
+            gameState: data.gameState,
+            handValue: dealerHandValue,
+        };
+
+        this.renderDealerCards(dealerData);
 
 
         const displayHands = data.player.hands.map(hand => {
