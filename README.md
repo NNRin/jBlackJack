@@ -1,5 +1,9 @@
 # jBlackJack
 
+
+https://github.com/user-attachments/assets/69247272-0cdd-44a9-807a-5c1bc8c4b628
+
+
 This project features a webapp to Play BlackJack with.   
 I was inspired to create this project during the Semester break, as I was eager to use the technologies I had learned to use during the Semester. The goal of this projet was to further deepen my understanding of these technologies and improve my skills overall. Of course I also wanted to have fun whilst doing it.
 
