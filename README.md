@@ -8,7 +8,12 @@ A web-based Blackjack application built to apply and deepen my knowledge of the 
 
 I started this project during the semester break to take the concepts I had learned in class and build a working full-stack application from scratch. The lion's share of development time went into architecting the core Blackjack game logic as a decoupled Java library, and subsequently serving that game state via a Spring Boot backend. 
 
-Building this was incredibly fun and achieved my primary goal: significantly improving my hands-on skills with Java, Spring Boot, and backend architectures.
+Building this was incredibly fun and achieved my primary goal: improving my hands-on skills with Java, Spring Boot, and backend architectures.
+
+### Key Learnings:
+- Understanding the uses and limitations of REST architecture for stateful games like Blackjack.
+- Taking a set of requirements (Blackjack rules) and translating them into business logic.
+- Breaking down a complex application into decoupled objects and defining their interactions to create a clean and maintainable architecture.
 
 ## Structure:
 
