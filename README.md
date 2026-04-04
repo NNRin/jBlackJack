@@ -4,12 +4,12 @@
 https://github.com/user-attachments/assets/69247272-0cdd-44a9-807a-5c1bc8c4b628
 
 
-This project features a webapp to Play BlackJack with.   
-I was inspired to create this project during the Semester break, as I was eager to use the technologies I had learned to use during the Semester. The goal of this projet was to further deepen my understanding of these technologies and improve my skills overall. Of course I also wanted to have fun whilst doing it.
+A web-based Blackjack application built to apply and deepen my knowledge of the Java/Web ecosystem.  
 
-The Lion share of time spent on this project was in replicating the BlackJack game Logic in a library and using Spring Boot to create a backend serving that game data.
+I started this project during the semester break to take the concepts I had learned in class and build a working full-stack application from scratch. The lion's share of development time went into architecting the core Blackjack game logic as a decoupled Java library, and subsequently serving that game state via a Spring Boot backend. 
 
-Overall I'm quite happy how it turned out. But even more important is that I feel like I have deepened my understanding of the technologies used. 
+Building this was incredibly fun and achieved my primary goal: significantly improving my hands-on skills with Java, Spring Boot, and backend architectures.
+
 ## Structure:
 
 * `blackjack-core/` — core game/domain logic (plain Java library) + tests.
@@ -38,13 +38,11 @@ Open in your browser:
 * http://localhost:8080/CardsMVC.html
 
 ## Known Issues
-- Splitting crashes the frontend if the current Hand cannot be Split
-- UI is very much a work in progress
-- Library / Backend are functional but code quality needs improvement
-- Backend Architecture is not optimal
-  - Perhaps an approach with websockets could be more beneficial
+- Attempting to split a hand when it is not legally allowed currently crashes the frontend logic.
+- The frontend is mostly functional but remains a work in progress.
+- While the core library and backend are operational, some components require refactoring to adhere to cleaner code principles and better separation of concerns.
+- The current HTTP request/response architecture isn't optimal for real-time game state synchronization.
 
 ## Expansion Ideas
-- Implement a multiplayer version of BlackJack with websockets
-- Create an AI with Machine Learning to beat the odds 
-  - Card Counting approach
+- Migrate the backend communication to WebSockets to enable real-time state updates and eventually support a multiplayer Blackjack mode.
+- Create an automated bot that uses Card Counting algorithms and ML to calculate probabilities and play against the dealer autonomously.
