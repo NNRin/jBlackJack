@@ -37,9 +37,6 @@ public interface SpBlackJackMapper {
         }
 
         try {
-            // 1. Extract the string
-            // 2. Convert to Upper Case (handles "hit" -> HIT)
-            // 3. Lookup the Enum
             return Actions.valueOf(actionDTO.action());
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid action: " + actionDTO.action());
