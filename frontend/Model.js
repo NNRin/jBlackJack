@@ -22,7 +22,7 @@ export default class Model {
         }
     };
 
-    BASE_URL = 'http://localhost:8080/sp/blackjack';
+    BASE_URL = '/sp/blackjack';
     constructor() {
         this.initialCreditAmount = 0;
     }
