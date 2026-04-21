@@ -25,6 +25,7 @@ export default class Model {
     BASE_URL = '/sp/blackjack';
     constructor() {
         this.initialCreditAmount = 0;
+        this.roundStartCreditAmount = 0;
     }
 
     bindRenderDealerCards(callback) { this.renderDealerCards = callback;}
@@ -99,25 +100,36 @@ export default class Model {
 
         this.renderPlayerHands(displayHands);
 
-        // Parse data from response to properly display in frontend
-        if (data.gameState === 'WaitingForBet') {
+        if (data.player.credit < this.initialCreditAmount) {
             this.initialCreditAmount = data.player.credit;
+        }
+
+        // Parse data from response to properly display in frontend
+        if (data.gameState === 'WaitingForMoveSurrenderAvailable' ||data.gameState === 'OfferingInsurance')  {
+            this.initialCreditAmount = data.player.credit;
+        }
+
+        if (data.gameState === 'WaitingForBet'){
+            this.roundStartCreditAmount = data.player.credit;
         }
 
         let calculatedCreditToDisplay = data.player.credit;
         let roundWinningsLocal = 0;
+        let partialReturn = false;
         if (data.gameState === 'RoundOver') {
             roundWinningsLocal = data.player.credit - this.initialCreditAmount;
             calculatedCreditToDisplay = this.initialCreditAmount;
+            if (this.roundStartCreditAmount >= (calculatedCreditToDisplay + roundWinningsLocal)) {
+                // means we only get a partial return of our round's bets
+                partialReturn = true;
+            }
         }
 
-        if (roundWinningsLocal <= 0) {
-            calculatedCreditToDisplay = data.player.credit;
-        }
 
         this.updateGameInfo({
             credit: calculatedCreditToDisplay,
             roundWinnings: roundWinningsLocal,
+            partialReturn: partialReturn,
             status: data.gameState,
             surrenderAvailable: data.player.isSurrenderAvailable,
             splitAvailable: data.player.isSplitAvailable,

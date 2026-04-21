@@ -80,12 +80,15 @@ export default class View {
         if (info.status === 'RoundOver') {
             this.show(this.btnNextRound);
             if (info.roundWinnings > 0) {
-                this.creditDisplay.innerText += `\nWinnings: + $${info.roundWinnings}`;
-                this.creditDisplay.innerText += `\nNew Credit: $${info.roundWinnings + info.credit}`;
-            } else if (info.roundWinnings < 0) {
-                this.creditDisplay.innerText += `\nRound Lost`;
-            } else {
-                this.creditDisplay.innerText += `\nRound Tie`;
+                if (info.partialReturn) {
+                    this.creditDisplay.innerText += `\nReturn: + $${info.roundWinnings}`;
+                    this.creditDisplay.innerText += `\nNew Credit: $${info.roundWinnings + info.credit}`;
+                } else{
+                    this.creditDisplay.innerText += `\nWinnings: + $${info.roundWinnings}`;
+                    this.creditDisplay.innerText += `\nNew Credit: $${info.roundWinnings + info.credit}`;
+                }
+            } else  {
+                this.creditDisplay.innerText += `\nNo Winnings`;
             }
             return;
         }
