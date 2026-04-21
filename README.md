@@ -1,5 +1,8 @@
 # jBlackJack
 
+### **[Click here to play the live game!](https://jblackjack-production.up.railway.app/CardsMVC.html)**
+(https://jblackjack-production.up.railway.app/CardsMVC.html)  
+
 https://github.com/user-attachments/assets/69247272-0cdd-44a9-807a-5c1bc8c4b628
 
 A web-based Blackjack application built to apply and deepen my knowledge of the Java/Web ecosystem.  
