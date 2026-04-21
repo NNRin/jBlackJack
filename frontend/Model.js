@@ -12,7 +12,9 @@ export default class Model {
             credit: 0,
             isSurrenderAvailable: false,
             isInsuranceBought: false,
-            hands: []
+            hands: [],
+            isSplitAvailable: false,
+            isDoubleDownAvailable: false,
         },
         dealer: {
             hand: { cards: [] },
@@ -118,6 +120,8 @@ export default class Model {
             roundWinnings: roundWinningsLocal,
             status: data.gameState,
             surrenderAvailable: data.player.isSurrenderAvailable,
+            splitAvailable: data.player.isSplitAvailable,
+            doubleDownAvailable: data.player.isDoubleDownAvailable,
             insuranceBought: data.player.isInsuranceBought,
             insuranceBet: data.player.insuranceBet,
             gameActive: !!data.id

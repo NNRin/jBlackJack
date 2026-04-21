@@ -22,9 +22,11 @@ public interface SpBlackJackMapper {
     DealerDTO toDealerDto(IDealer dealer);
 
     @Mapping(target="hands", source="hand")
-    @Mapping(target = "isSurrenderAvailable", source = "surrenderAvailable") // e.g., source = "surrenderOption" if method is isSurrenderOption()
-    @Mapping(target = "isInsuranceBought", source = "insuranceBought")    // e.g., source = "insuranceActive"
-    @Mapping(target = "isInsuranceWon", source = "insuranceWon")       // e.g., source = "insuranceWin"
+    @Mapping(target = "isSurrenderAvailable", source = "surrenderAvailable")
+    @Mapping(target = "isInsuranceBought", source = "insuranceBought")
+    @Mapping(target = "isInsuranceWon", source = "insuranceWon")
+    @Mapping(target = "isSplitAvailable", source= "splitAvailable")
+    @Mapping(target = "isDoubleDownAvailable", source= "doubleDownAvailable")
     PlayerDTO toPlayerDto(IPlayer player);
 
     @Mapping(target = "wasStackReshuffled", expression = "java(gameManager.wasStackReshuffled())")

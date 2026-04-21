@@ -9,6 +9,8 @@ public record PlayerDTO(
         boolean isInsuranceBought,
         double insuranceBet,
         boolean isInsuranceWon,
+        boolean isSplitAvailable,
+        boolean isDoubleDownAvailable,
         List<HandDTO> hands
 ) {
 }

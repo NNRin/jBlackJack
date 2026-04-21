@@ -100,11 +100,15 @@ export default class View {
         if (info.status.includes('WaitingForMove')) {
             this.show(this.btnHit);
             this.show(this.btnStand);
-            this.show(this.btnDouble);
-            this.show(this.btnSplit);
 
             if (info.surrenderAvailable) {
                 this.show(this.btnSurrender);
+            }
+            if (info.splitAvailable) {
+                this.show(this.btnSplit);
+            }
+            if (info.doubleDownAvailable) {
+                this.show(this.btnDouble);
             }
         }
 

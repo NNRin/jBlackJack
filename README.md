@@ -43,8 +43,7 @@ Open in your browser:
 * http://localhost:8080/CardsMVC.html
 
 ## Known Issues
-- Attempting to split a hand when it is not legally allowed currently crashes the frontend logic.
-- The frontend is mostly functional but remains a work in progress.
+- The frontend is functional, but remains a work in progress.
 - While the core library and backend are operational, some components require refactoring to adhere to cleaner code principles and better separation of concerns.
 - The current HTTP request/response architecture isn't optimal for real-time game state synchronization.
 
