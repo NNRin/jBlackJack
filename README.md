@@ -1,6 +1,6 @@
 # jBlackJack
 
-### **[Click here to play the live game!](https://jblackjack-production.up.railway.app/CardsMVC.html)**
+<h3><a href="https://jblackjack-production.up.railway.app/CardsMVC.html" target="_blank">Click here to play the live game!</a></h3> 
 (https://jblackjack-production.up.railway.app/CardsMVC.html)  
 
 https://github.com/user-attachments/assets/69247272-0cdd-44a9-807a-5c1bc8c4b628
